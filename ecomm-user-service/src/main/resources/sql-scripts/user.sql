@@ -6,28 +6,28 @@ create database if not exists ecommerce_db2;
 
 use ecommerce_db2;
 
-drop table if exists users;
+drop table if exists user;
 
-create table users (
+create table user (
     user_id mediumint primary key auto_increment,
     user_name varchar(45) not null,
-    email_id varchar(30) unique not null,
+    email_id varchar(30) not null,
     is_active char(1) not null
 ) auto_increment = 1000001;
 
-show index from users;
--- drop index email_id on users;
+show index from user;
+-- drop index email_id on user;
 
 create unique index idx_uq_email_id
-on users ((case when is_active = 'Y' then email_id else null end));
+on user ((case when is_active = 'Y' then email_id else null end));
 
-insert into users 
+insert into user 
 (user_name, email_id, is_active)
 values
 ('John', 'john@gmail.com', 'Y'),
 ('Peter', 'peter@gmail.com', 'Y'),
 ('Billy', 'billy@gmail.com', 'N');
 
-select * from users;
+select * from user;
 
--- desc users;
+-- desc user;
