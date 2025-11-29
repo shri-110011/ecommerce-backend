@@ -10,6 +10,10 @@ spring:
                   uri: lb://user-service
                   predicates:
                     - Path=/api/users/**
+                - id: cart-service
+                  uri: lb://cart-service
+                  predicates:
+                    - Path=/api/carts/**
 
 server:
     port: 8082
