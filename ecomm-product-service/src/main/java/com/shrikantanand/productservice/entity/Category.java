@@ -29,7 +29,8 @@ public class Category {
 	@Column(name = "category_name")
 	private String categoryName;
 	
-	@OneToMany(mappedBy = "category", cascade = {CascadeType.REFRESH}, fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "category", cascade = {CascadeType.REFRESH}, 
+			fetch = FetchType.LAZY)
 	@JsonIgnore
 	private List<Product> products;
 	
