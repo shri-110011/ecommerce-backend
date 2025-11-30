@@ -9,8 +9,11 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
+import com.shrikantanand.productservice.dto.ErrorResponse;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -45,5 +48,14 @@ public class GlobalExceptionHandler {
         + "Please ensure the correct data types are used.");
         return errors;
     }
+    
+    @ExceptionHandler(CategoryNotFoundException.class)
+	public ResponseEntity<ErrorResponse> handleCategoryNotFoundException(
+			CategoryNotFoundException ex) {
+	    ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND.value(),
+	            ex.getMessage(),
+	            System.currentTimeMillis());
+	    return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+	}
     
 }

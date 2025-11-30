@@ -1,5 +1,6 @@
 package com.shrikantanand.productservice.entity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,10 +25,25 @@ public class Category {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "category_id")
-	private byte categoryId;
+	private Byte categoryId;
 	
 	@Column(name = "category_name")
 	private String categoryName;
+	
+	@Column(name = "is_active")
+	private Character isActive;
+	
+	@Column(name = "created_datetime")
+	private LocalDateTime createdDateTime;
+	
+	@Column(name = "created_by")
+	private String createdBy;
+	
+	@Column(name = "last_updated_datetime")
+	private LocalDateTime lastUpdatedDateTime;
+	
+	@Column(name = "last_updated_by")
+	private String lastUpdatedBy;
 	
 	@OneToMany(mappedBy = "category", cascade = {CascadeType.REFRESH}, 
 			fetch = FetchType.LAZY)

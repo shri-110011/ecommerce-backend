@@ -3,7 +3,6 @@ package com.shrikantanand.productservice.entity;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -16,41 +15,32 @@ import jakarta.persistence.Table;
 import lombok.Data;
 
 @Entity
-@Table(name = "product")
+@Table(name = "product_price_history")
 @Data
-public class Product {
+public class ProductPriceHistory {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "product_id")
-	private Integer productId;
+	@Column(name = "history_id")
+	private Integer historyId;
 	
-	@Column(name = "product_name")
-	private String productName;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "product_id")
+	private Product product;
 	
-	@Column(name = "price")
-	private BigDecimal price;
+	@Column(name = "old_price")
+	private BigDecimal oldPrice;
 	
-	@Column(name = "actual_stock")
-	private Integer actualStock;
+	@Column(name = "new_price")
+	private BigDecimal newPrice;
 	
-	@Column(name = "is_active")
-	private Character isActive;
+	@Column(name = "current_price_version")
+	private Integer currentPriceVersion;
 	
 	@Column(name = "created_datetime")
 	private LocalDateTime createdDateTime;
 	
 	@Column(name = "created_by")
 	private String createdBy;
-	
-	@Column(name = "last_updated_datetime")
-	private LocalDateTime lastUpdatedDateTime;
-	
-	@Column(name = "last_updated_by")
-	private String lastUpdatedBy;
-	
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "category_id")
-	private Category category;
-	
+
 }

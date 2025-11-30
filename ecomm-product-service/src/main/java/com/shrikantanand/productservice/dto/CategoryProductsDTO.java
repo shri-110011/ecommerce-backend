@@ -11,6 +11,6 @@ public class CategoryProductsDTO {
 	
 	private String categoryName;
 	
-	private List<ProductDetailDTO> products;
+	private List<ProductSummaryDTO> products;
 
 }
