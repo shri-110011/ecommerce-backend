@@ -3,27 +3,31 @@ package com.shrikantanand.productservice.exception;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.shrikantanand.productservice.dto.ErrorResponse;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+	
+	private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
     public Map<String, String> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
-    	System.out.println("Inside handleMethodArgumentNotValid()");
-    	System.out.println(ex.getBindingResult().getAllErrors());
+    	logger.error("Inside handleMethodArgumentNotValid()");
+    	logger.error(ex.getBindingResult().getAllErrors().toString());
     	
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach((error) -> {
@@ -32,7 +36,7 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
         
-        System.out.println(errors);
+        logger.error(errors.toString());
         return errors;
     }
     
@@ -40,8 +44,8 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
     public Map<String, String> handleInvalidRequest(HttpMessageNotReadableException ex) {
-    	System.out.println("Inside handleInvalidRequest()");
-    	System.out.println(ex.getMessage());
+    	logger.error("Inside handleInvalidRequest()");
+    	logger.error(ex.getMessage());
     	
         Map<String, String> errors = new HashMap<>();
         errors.put("message", "Some fields in the request body have have wrong type of values. " 

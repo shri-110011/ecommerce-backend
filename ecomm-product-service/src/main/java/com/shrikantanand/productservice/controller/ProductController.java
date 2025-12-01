@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,8 +17,12 @@ import com.shrikantanand.productservice.dto.AddProductRequest;
 import com.shrikantanand.productservice.dto.AddProductResponse;
 import com.shrikantanand.productservice.dto.ErrorResponse;
 import com.shrikantanand.productservice.dto.ProductSummaryDTO;
+import com.shrikantanand.productservice.dto.UpdateProductPriceRequest;
+import com.shrikantanand.productservice.dto.UpdateProductPriceResponse;
 import com.shrikantanand.productservice.exception.ProductNotFoundException;
 import com.shrikantanand.productservice.service.ProductService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/products")
@@ -35,6 +40,13 @@ public class ProductController {
 	@PostMapping
 	public AddProductResponse addProduct(@RequestBody AddProductRequest request) {
 		return productService.addProduct(request);
+	}
+	
+	@PatchMapping("/{productId}/price")
+	public UpdateProductPriceResponse updateProductPrice(
+			@PathVariable int productId, 
+			@Valid @RequestBody UpdateProductPriceRequest request) {
+		return productService.updateProductPrice(productId, request.getNewPrice());
 	}
 	
 	@ExceptionHandler(ProductNotFoundException.class)

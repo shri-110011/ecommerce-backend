@@ -8,7 +8,8 @@ create table product_price_history (
     current_price_version smallint not null,
     created_datetime timestamp default current_timestamp not null,
     created_by varchar(45) not null,
-    foreign key(product_id) references product(product_id)
+    foreign key(product_id) references product(product_id),
+    constraint uq_prod_id_cur_price_ver unique(product_id, current_price_version)
 )auto_increment = 1000001;
 
 insert into product_price_history(product_id, old_price, new_price, 

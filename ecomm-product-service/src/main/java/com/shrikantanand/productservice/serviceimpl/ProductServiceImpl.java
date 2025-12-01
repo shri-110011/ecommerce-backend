@@ -18,6 +18,7 @@ import com.shrikantanand.productservice.dto.AddProductRequest;
 import com.shrikantanand.productservice.dto.AddProductResponse;
 import com.shrikantanand.productservice.dto.ProductDetailsDTO;
 import com.shrikantanand.productservice.dto.ProductSummaryDTO;
+import com.shrikantanand.productservice.dto.UpdateProductPriceResponse;
 import com.shrikantanand.productservice.entity.Product;
 import com.shrikantanand.productservice.entity.ProductPriceHistory;
 import com.shrikantanand.productservice.exception.CategoryNotFoundException;
@@ -127,6 +128,43 @@ public class ProductServiceImpl implements ProductService {
 		AddProductResponse response = new AddProductResponse(productId, 
 				request.getProductName(), request.getProductPrice(), categoryId, 
 				request.getActualStock(), now, createdBy, 'Y', message);
+		return response;
+	}
+
+	@Override
+	@Transactional
+	public UpdateProductPriceResponse updateProductPrice(int productId, BigDecimal newPrice) {
+		Product product = productRepository.getProductForUpdate(productId)
+				.orElseThrow(() -> {
+					throw new ProductNotFoundException("Product id: " + productId + " not found!");
+				});
+		BigDecimal oldPrice = product.getPrice();
+		if(oldPrice.compareTo(newPrice) == 0) {
+			final String message = "New price is same as the old price. No update performed.";
+			UpdateProductPriceResponse response = new UpdateProductPriceResponse(
+					productId, product.getProductName(), oldPrice, 
+					newPrice, null, null, message);
+			return response;
+		}
+		Integer latestPriceVersion = productRepository.getLatestPriceVersion(productId);
+		final LocalDateTime now = LocalDateTime.now();
+		final String updatedBy = "ADMIN";
+		product.setPrice(newPrice);
+		product.setPriceVersion(latestPriceVersion + 1);
+		product.setLastUpdatedDateTime(now);
+		product.setLastUpdatedBy(updatedBy);
+		ProductPriceHistory productPriceHistory = new ProductPriceHistory();
+		productPriceHistory.setProduct(product);
+		productPriceHistory.setOldPrice(oldPrice);
+		productPriceHistory.setNewPrice(newPrice);
+		productPriceHistory.setCurrentPriceVersion(latestPriceVersion + 1);
+		productPriceHistory.setCreatedDateTime(now);
+		productPriceHistory.setCreatedBy(updatedBy);
+		productPriceHistoryRepository.save(productPriceHistory);
+		final String message = "Product price updated successfully!";
+		UpdateProductPriceResponse response = new UpdateProductPriceResponse(
+				productId, product.getProductName(), oldPrice, 
+				newPrice, now, updatedBy, message);
 		return response;
 	}
 

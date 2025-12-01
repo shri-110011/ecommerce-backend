@@ -3,7 +3,6 @@ package com.shrikantanand.productservice.entity;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -33,6 +32,9 @@ public class Product {
 	
 	@Column(name = "actual_stock")
 	private Integer actualStock;
+	
+	@Column(name = "price_version")
+	private Integer priceVersion;
 	
 	@Column(name = "is_active")
 	private Character isActive;
