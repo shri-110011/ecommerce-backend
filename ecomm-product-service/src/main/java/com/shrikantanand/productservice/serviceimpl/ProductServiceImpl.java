@@ -3,6 +3,10 @@ package com.shrikantanand.productservice.serviceimpl;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -16,6 +20,10 @@ import com.shrikantanand.productservice.dao.ProductPriceHistoryRepository;
 import com.shrikantanand.productservice.dao.ProductRepository;
 import com.shrikantanand.productservice.dto.AddProductRequest;
 import com.shrikantanand.productservice.dto.AddProductResponse;
+import com.shrikantanand.productservice.dto.PriceMismatchItem;
+import com.shrikantanand.productservice.dto.PriceValidationItem;
+import com.shrikantanand.productservice.dto.PriceValidationRequest;
+import com.shrikantanand.productservice.dto.PriceValidationResponse;
 import com.shrikantanand.productservice.dto.ProductDetailsDTO;
 import com.shrikantanand.productservice.dto.ProductSummaryDTO;
 import com.shrikantanand.productservice.dto.UpdateProductPriceResponse;
@@ -165,6 +173,41 @@ public class ProductServiceImpl implements ProductService {
 		UpdateProductPriceResponse response = new UpdateProductPriceResponse(
 				productId, product.getProductName(), oldPrice, 
 				newPrice, now, updatedBy, message);
+		return response;
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public PriceValidationResponse validatePrice(List<PriceValidationItem> items) {
+		List<Integer> productIds = items.stream()
+				.map(item -> item.getProductId())
+				.toList();
+		List<PriceValidationItem> fetchedProductPrices = 
+				productRepository.getProductsPrice(productIds);
+		Map<Integer, BigDecimal> currentPriceMap = fetchedProductPrices.stream()
+				.collect(Collectors.toMap(
+						item -> item.getProductId(), 
+						item -> item.getPricePerUnit()
+				));
+		List<PriceMismatchItem> priceMismatchItems = new ArrayList<>();
+		List<Integer> invalidProductIds = new ArrayList<>();
+		for(PriceValidationItem item : items) {
+			if(!currentPriceMap.containsKey(item.getProductId())) {
+				invalidProductIds.add(item.getProductId());
+			}
+			else {
+				BigDecimal actualPricePerUnit = currentPriceMap.get(item.getProductId());
+				if(actualPricePerUnit.compareTo(item.getPricePerUnit()) != 0) {
+					PriceMismatchItem mismatchItem = new PriceMismatchItem(
+							item.getProductId(), 
+							actualPricePerUnit, 
+							item.getPricePerUnit());
+					priceMismatchItems.add(mismatchItem);
+				}
+			}
+		}
+		PriceValidationResponse response = new PriceValidationResponse(priceMismatchItems, 
+				invalidProductIds);
 		return response;
 	}
 

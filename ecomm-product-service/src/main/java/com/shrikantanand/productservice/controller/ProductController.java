@@ -1,5 +1,7 @@
 package com.shrikantanand.productservice.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.shrikantanand.productservice.dto.AddProductRequest;
 import com.shrikantanand.productservice.dto.AddProductResponse;
 import com.shrikantanand.productservice.dto.ErrorResponse;
+import com.shrikantanand.productservice.dto.PriceValidationItem;
+import com.shrikantanand.productservice.dto.PriceValidationRequest;
+import com.shrikantanand.productservice.dto.PriceValidationResponse;
 import com.shrikantanand.productservice.dto.ProductSummaryDTO;
 import com.shrikantanand.productservice.dto.UpdateProductPriceRequest;
 import com.shrikantanand.productservice.dto.UpdateProductPriceResponse;
@@ -47,6 +52,12 @@ public class ProductController {
 			@PathVariable int productId, 
 			@Valid @RequestBody UpdateProductPriceRequest request) {
 		return productService.updateProductPrice(productId, request.getNewPrice());
+	}
+	
+	@PostMapping("/price/validation")
+	public PriceValidationResponse validatePrice(
+			@Valid @RequestBody List<PriceValidationItem> items) {
+		return productService.validatePrice(items);
 	}
 	
 	@ExceptionHandler(ProductNotFoundException.class)
