@@ -1,4 +1,4 @@
--- drop database if exists ecommerce_db;
+-- drop database if exists ecommerce_db2;
 
 -- drop database ecommerce_db2;
 

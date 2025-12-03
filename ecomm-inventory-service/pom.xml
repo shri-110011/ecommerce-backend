@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.shrikantanand</groupId>
-	<artifactId>ecomm-product-service</artifactId>
+	<artifactId>ecomm-inventory-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>ecomm-product-service</name>
-	<description>Product Service</description>
+	<name>ecomm-inventory-service</name>
+	<description>Inventory Service</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -40,10 +40,6 @@
 			<artifactId>spring-boot-starter-webmvc</artifactId>
 		</dependency>
 		<dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
-        </dependency>
-		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
 		</dependency>
@@ -68,10 +64,6 @@
 			<artifactId>spring-boot-starter-webmvc-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
-        </dependency>
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>

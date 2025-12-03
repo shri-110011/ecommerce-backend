@@ -18,8 +18,6 @@ public class AddProductResponse {
 	
 	private Byte categoryId;
 	
-	private Integer actualStock;
-	
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime createdDateTime;
 	

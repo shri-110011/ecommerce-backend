@@ -20,8 +20,5 @@ public class AddProductRequest {
 	
 	@NotNull(message = "must not be null")
 	private Byte categoryId;
-	
-	@NotNull(message = "must not be null")
-	private Integer actualStock;
 
 }

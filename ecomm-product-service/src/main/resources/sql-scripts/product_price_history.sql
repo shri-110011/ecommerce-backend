@@ -1,4 +1,6 @@
--- use ecommerce_db;
+-- use ecommerce_db2;
+
+drop table if exists product_price_history;
 
 create table product_price_history (
     history_id mediumint primary key auto_increment,

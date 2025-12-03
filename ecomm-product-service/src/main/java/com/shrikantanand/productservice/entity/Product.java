@@ -30,9 +30,6 @@ public class Product {
 	@Column(name = "price")
 	private BigDecimal price;
 	
-	@Column(name = "actual_stock")
-	private Integer actualStock;
-	
 	@Column(name = "price_version")
 	private Integer priceVersion;
 	

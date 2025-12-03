@@ -22,7 +22,6 @@ import com.shrikantanand.productservice.dto.AddProductRequest;
 import com.shrikantanand.productservice.dto.AddProductResponse;
 import com.shrikantanand.productservice.dto.PriceMismatchItem;
 import com.shrikantanand.productservice.dto.PriceValidationItem;
-import com.shrikantanand.productservice.dto.PriceValidationRequest;
 import com.shrikantanand.productservice.dto.PriceValidationResponse;
 import com.shrikantanand.productservice.dto.ProductDetailsDTO;
 import com.shrikantanand.productservice.dto.ProductSummaryDTO;
@@ -113,7 +112,6 @@ public class ProductServiceImpl implements ProductService {
 		Product product = new Product();
 		product.setProductName(request.getProductName());
 		product.setPrice(request.getProductPrice());
-		product.setActualStock(request.getActualStock());
 		product.setCategory(categoryRepository.getReferenceById(categoryId));
 		product.setIsActive('Y');
 		final LocalDateTime now = LocalDateTime.now();
@@ -135,7 +133,7 @@ public class ProductServiceImpl implements ProductService {
 		final String message = "Product added successfully!";
 		AddProductResponse response = new AddProductResponse(productId, 
 				request.getProductName(), request.getProductPrice(), categoryId, 
-				request.getActualStock(), now, createdBy, 'Y', message);
+				now, createdBy, 'Y', message);
 		return response;
 	}
 

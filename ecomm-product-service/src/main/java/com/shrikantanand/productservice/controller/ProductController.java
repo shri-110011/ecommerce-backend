@@ -19,7 +19,6 @@ import com.shrikantanand.productservice.dto.AddProductRequest;
 import com.shrikantanand.productservice.dto.AddProductResponse;
 import com.shrikantanand.productservice.dto.ErrorResponse;
 import com.shrikantanand.productservice.dto.PriceValidationItem;
-import com.shrikantanand.productservice.dto.PriceValidationRequest;
 import com.shrikantanand.productservice.dto.PriceValidationResponse;
 import com.shrikantanand.productservice.dto.ProductSummaryDTO;
 import com.shrikantanand.productservice.dto.UpdateProductPriceRequest;
