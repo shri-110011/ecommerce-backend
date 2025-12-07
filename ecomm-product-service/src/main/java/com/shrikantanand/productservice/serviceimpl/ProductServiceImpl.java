@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shrikantanand.productservice.dao.CategoryRepository;
+import com.shrikantanand.productservice.dao.ProductEventOutboxRepository;
 import com.shrikantanand.productservice.dao.ProductPriceHistoryRepository;
 import com.shrikantanand.productservice.dao.ProductRepository;
 import com.shrikantanand.productservice.dto.AddProductRequest;
@@ -27,7 +28,9 @@ import com.shrikantanand.productservice.dto.ProductDetailsDTO;
 import com.shrikantanand.productservice.dto.ProductSummaryDTO;
 import com.shrikantanand.productservice.dto.UpdateProductPriceResponse;
 import com.shrikantanand.productservice.entity.Product;
+import com.shrikantanand.productservice.entity.ProductEventOutbox;
 import com.shrikantanand.productservice.entity.ProductPriceHistory;
+import com.shrikantanand.productservice.enumeration.ProductEventType;
 import com.shrikantanand.productservice.exception.CategoryNotFoundException;
 import com.shrikantanand.productservice.exception.ProductNotFoundException;
 import com.shrikantanand.productservice.service.ProductService;
@@ -49,6 +52,9 @@ public class ProductServiceImpl implements ProductService {
 	
 	@Autowired
 	private RedisTemplate<String, Object> redisTemplate;
+	
+	@Autowired
+	private ProductEventOutboxRepository productEventOutboxRepository;
 	
 	private static final int PRODUCT_PRICE_TTL_SECONDS = 60;
 	
@@ -113,6 +119,7 @@ public class ProductServiceImpl implements ProductService {
 		product.setProductName(request.getProductName());
 		product.setPrice(request.getProductPrice());
 		product.setCategory(categoryRepository.getReferenceById(categoryId));
+		product.setPriceVersion(1);
 		product.setIsActive('Y');
 		final LocalDateTime now = LocalDateTime.now();
 		final String createdBy = "ADMIN";
@@ -122,6 +129,7 @@ public class ProductServiceImpl implements ProductService {
 		product.setLastUpdatedBy(createdBy);
 		productRepository.save(product);
 		
+		// Added the initial price for this product to product price history table.
 		ProductPriceHistory productPriceHistory = new ProductPriceHistory();
 		productPriceHistory.setProduct(product);
 		productPriceHistory.setNewPrice(request.getProductPrice());
@@ -130,6 +138,20 @@ public class ProductServiceImpl implements ProductService {
 		productPriceHistory.setCreatedDateTime(now);
 		productPriceHistoryRepository.save(productPriceHistory);
 		Integer productId = product.getProductId();
+        
+		// Add the product created event to outbox table.
+		ProductEventOutbox productEventOutbox = new ProductEventOutbox();
+		productEventOutbox.setEventType(ProductEventType.PRODUCT_ADDED);
+		productEventOutbox.setProductId(productId);
+		productEventOutbox.setIsProcessed('N');
+		productEventOutbox.setRetryCount(0);
+		productEventOutbox.setNextRetryAt(now);
+		productEventOutbox.setCreatedDateTime(now);
+		productEventOutbox.setCreatedBy(createdBy);
+		productEventOutbox.setLastUpdatedDateTime(now);
+		productEventOutbox.setLastUpdatedBy(createdBy);
+		productEventOutboxRepository.save(productEventOutbox);
+		
 		final String message = "Product added successfully!";
 		AddProductResponse response = new AddProductResponse(productId, 
 				request.getProductName(), request.getProductPrice(), categoryId, 

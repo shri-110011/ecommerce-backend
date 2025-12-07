@@ -9,5 +9,5 @@ public class EcommInventoryServiceApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(EcommInventoryServiceApplication.class, args);
 	}
-
+	
 }

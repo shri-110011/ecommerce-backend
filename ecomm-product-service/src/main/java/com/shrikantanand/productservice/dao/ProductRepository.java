@@ -28,9 +28,12 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 			""")
 	Integer getLatestPriceVersion(Integer productId);
 
-	@Query("select new com.shrikantanand.productservice.dto.PriceValidationItem("
-			+ "p.productId, p.price) "
-			+ "from Product p where p.productId in :productIds")
+	@Query(""" 
+			select new com.shrikantanand.productservice.dto.PriceValidationItem(
+			p.productId, p.price) from Product p 
+			where p.productId in :productIds 
+			and p.isActive = 'Y'
+			""")
 	List<PriceValidationItem> getProductsPrice(List<Integer> productIds);
 
 }
