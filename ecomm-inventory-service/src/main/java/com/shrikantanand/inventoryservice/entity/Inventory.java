@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Data;
 
@@ -12,14 +15,16 @@ import lombok.Data;
 @Data
 public class Inventory {
 	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "inventory_id")
 	private Integer inventoryId;
 	
 	@Column(name = "product_id")
 	private Integer productId;
 	
-	@Column(name = "quantity")
-	private Integer quantity;
+	@Column(name = "actual_stock")
+	private Integer actualStock;
 	
 	@Column(name = "created_datetime")
 	private LocalDateTime createdDateTime;

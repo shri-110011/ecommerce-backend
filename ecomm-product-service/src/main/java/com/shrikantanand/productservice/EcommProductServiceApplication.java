@@ -17,7 +17,7 @@ import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JacksonJsonSerializer;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-import com.shrikantanand.productservice.dto.ProductEvent;
+import com.shrikantanand.productservice.dto.ProductLifecycleEvent;
 
 @SpringBootApplication
 @EnableScheduling
@@ -44,7 +44,7 @@ public class EcommProductServiceApplication {
 	}
 	
 	@Bean
-	public ProducerFactory<Integer, ProductEvent> productAddedEventProducerFactory() {
+	public ProducerFactory<Integer, ProductLifecycleEvent> productLifeCycleEventProducerFactory() {
 		Map<String, Object> configProps = new HashMap<>();
 		configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
 		configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class);
@@ -57,8 +57,8 @@ public class EcommProductServiceApplication {
 	}
 	
 	@Bean
-	public KafkaTemplate<Integer, ProductEvent> productAddedEventKafkaTemplate() {
-	    return new KafkaTemplate<>(productAddedEventProducerFactory());
+	public KafkaTemplate<Integer, ProductLifecycleEvent> productLifeCycleEventKafkaTemplate() {
+	    return new KafkaTemplate<>(productLifeCycleEventProducerFactory());
 	}
 
 }

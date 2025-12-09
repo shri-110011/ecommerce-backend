@@ -2,7 +2,7 @@ package com.shrikantanand.productservice.entity;
 
 import java.time.LocalDateTime;
 
-import com.shrikantanand.productservice.enumeration.ProductEventType;
+import com.shrikantanand.productservice.enumeration.ProductLifecycleEventType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -26,7 +26,7 @@ public class ProductEventOutbox {
 	
 	@Column(name = "event_type")
 	@Enumerated(EnumType.STRING)
-	private ProductEventType eventType;
+	private ProductLifecycleEventType eventType;
 	
 	private Integer productId;
 	

@@ -30,7 +30,7 @@ import com.shrikantanand.productservice.dto.UpdateProductPriceResponse;
 import com.shrikantanand.productservice.entity.Product;
 import com.shrikantanand.productservice.entity.ProductEventOutbox;
 import com.shrikantanand.productservice.entity.ProductPriceHistory;
-import com.shrikantanand.productservice.enumeration.ProductEventType;
+import com.shrikantanand.productservice.enumeration.ProductLifecycleEventType;
 import com.shrikantanand.productservice.exception.CategoryNotFoundException;
 import com.shrikantanand.productservice.exception.ProductNotFoundException;
 import com.shrikantanand.productservice.service.ProductService;
@@ -141,7 +141,7 @@ public class ProductServiceImpl implements ProductService {
         
 		// Add the product created event to outbox table.
 		ProductEventOutbox productEventOutbox = new ProductEventOutbox();
-		productEventOutbox.setEventType(ProductEventType.PRODUCT_ADDED);
+		productEventOutbox.setEventType(ProductLifecycleEventType.PRODUCT_ADDED);
 		productEventOutbox.setProductId(productId);
 		productEventOutbox.setIsProcessed('N');
 		productEventOutbox.setRetryCount(0);

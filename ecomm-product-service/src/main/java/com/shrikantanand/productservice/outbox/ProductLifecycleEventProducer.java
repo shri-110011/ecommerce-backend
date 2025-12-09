@@ -8,19 +8,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
-import com.shrikantanand.productservice.dto.ProductEvent;
+import com.shrikantanand.productservice.dto.ProductLifecycleEvent;
 
 @Service
-public class ProductEventProducer {
+public class ProductLifecycleEventProducer {
 	
 	@Autowired
-	KafkaTemplate<Integer, ProductEvent> kafkaTemplate;
+	KafkaTemplate<Integer, ProductLifecycleEvent> kafkaTemplate;
 	
-	private static final String TOPIC = "product-event-topic";
+	private static final String TOPIC = "product.lifecycle.events";
 	
-	public boolean publishProductEvent(ProductEvent event) {
+	public boolean publishProductEvent(ProductLifecycleEvent event) {
 		try {
-			kafkaTemplate.send(TOPIC, event).get(1, TimeUnit.SECONDS);
+			kafkaTemplate.send(TOPIC, event).get(3, TimeUnit.SECONDS);
 			return true;
 		} catch (InterruptedException | ExecutionException | TimeoutException e) {
 			e.printStackTrace();

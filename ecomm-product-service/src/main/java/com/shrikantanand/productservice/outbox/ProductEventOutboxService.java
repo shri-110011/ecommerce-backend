@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.shrikantanand.productservice.dao.ProductEventOutboxRepository;
-import com.shrikantanand.productservice.dto.ProductEvent;
+import com.shrikantanand.productservice.dto.ProductLifecycleEvent;
 import com.shrikantanand.productservice.entity.ProductEventOutbox;
 
 @Component
@@ -25,7 +25,7 @@ public class ProductEventOutboxService {
 	private ProductEventOutboxRepository productEventOutboxRepository;
 	
 	@Autowired
-	private ProductEventProducer productEventProducer;
+	private ProductLifecycleEventProducer productEventProducer;
 	
 	@Transactional
 	public void processPendingProductEvents() {
@@ -46,7 +46,7 @@ public class ProductEventOutboxService {
 		latestProductEventsMap.entrySet()
 		.stream()
 		.forEach(e -> {
-			ProductEvent event = new ProductEvent();
+			ProductLifecycleEvent event = new ProductLifecycleEvent();
 			event.setProductId(e.getKey());
 			event.setEventType(e.getValue().getEventType());
 			// We are waiting for the producer to get acknowledgement from 
