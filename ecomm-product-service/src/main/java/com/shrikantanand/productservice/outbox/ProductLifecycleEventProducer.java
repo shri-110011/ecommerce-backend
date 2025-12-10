@@ -20,7 +20,10 @@ public class ProductLifecycleEventProducer {
 	
 	public boolean publishProductEvent(ProductLifecycleEvent event) {
 		try {
-			kafkaTemplate.send(TOPIC, event).get(3, TimeUnit.SECONDS);
+			// We need to partition by productId to make sure that messages 
+			// associated with a product id are processed by a single consumer 
+			// at any time.
+			kafkaTemplate.send(TOPIC, event.getProductId(), event).get(3, TimeUnit.SECONDS);
 			return true;
 		} catch (InterruptedException | ExecutionException | TimeoutException e) {
 			e.printStackTrace();

@@ -53,6 +53,10 @@ public class EcommProductServiceApplication {
 	    configProps.put(ProducerConfig.MAX_BLOCK_MS_CONFIG, 2000);
 	    configProps.put(ProducerConfig.RECONNECT_BACKOFF_MS_CONFIG, 3000);
 	    configProps.put(ProducerConfig.RECONNECT_BACKOFF_MAX_MS_CONFIG, 24000);
+	    
+	    // This is required to tell producer to not send the type info for the message.
+	    // Basically it will tell the producer to not send __TypeId__ header info.
+	    configProps.put(JacksonJsonSerializer.ADD_TYPE_INFO_HEADERS, false);
 		return new DefaultKafkaProducerFactory<>(configProps);
 	}
 	

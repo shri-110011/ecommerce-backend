@@ -19,6 +19,12 @@ public class InventoryServiceImpl implements InventoryService {
 	@Override
 	@Transactional
 	public void addNewInventory(int productId) {
+		// This check is required to make the productLifecycleEventConsumer 
+		// idempotent. That is event if the message is passed multiple times 
+		// we should not end up inserting multiple records into inventory 
+		// table.
+		int rows = inventoryRepository.findByProductId(productId);
+		if(rows > 0) return;
 		Inventory inventory = new Inventory();
 		inventory.setProductId(productId);
 		inventory.setActualStock(0);

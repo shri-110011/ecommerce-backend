@@ -35,7 +35,6 @@ public class EcommInventoryServiceApplication {
 		configProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
 				JacksonJsonDeserializer.class);
 		configProps.put(JacksonJsonDeserializer.VALUE_DEFAULT_TYPE, ProductLifecycleEvent.class);
-		configProps.put(JacksonJsonDeserializer.TRUSTED_PACKAGES, "com.shrikantanand.inventoryservice.dto");
 		configProps.put(ConsumerConfig.GROUP_ID_CONFIG, "inventory-service.sync-inventory");
 		configProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
 		configProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
