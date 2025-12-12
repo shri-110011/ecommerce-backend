@@ -11,7 +11,7 @@ public class CartItemMutationResponse  {
 	
 	private String message;
 	
-	private String cartId;
+	private Integer cartId;
 	
 	private CartItem item;
 

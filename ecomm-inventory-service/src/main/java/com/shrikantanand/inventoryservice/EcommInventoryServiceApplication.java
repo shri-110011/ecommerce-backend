@@ -1,6 +1,7 @@
 package com.shrikantanand.inventoryservice;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -8,6 +9,11 @@ import org.apache.kafka.common.serialization.IntegerDeserializer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
@@ -18,7 +24,7 @@ import org.springframework.kafka.support.serializer.JacksonJsonDeserializer;
 import com.shrikantanand.inventoryservice.dto.ProductLifecycleEvent;
 
 @SpringBootApplication
-@EnableKafka
+//@EnableKafka
 public class EcommInventoryServiceApplication {
 
 	public static void main(String[] args) {
@@ -50,5 +56,26 @@ public class EcommInventoryServiceApplication {
 		factory.getContainerProperties().setAckMode(AckMode.MANUAL);
 		return factory;
 	}
+	
+	@Bean
+	public RedisTemplate<String, String> redisTemplate(
+			RedisConnectionFactory connectionFactory) {
+		RedisTemplate<String, String> template = new RedisTemplate<>();
+	    template.setConnectionFactory(connectionFactory);
+	    
+	    // Store keys and values as plain strings
+	    template.setKeySerializer(new StringRedisSerializer());
+	    template.setValueSerializer(new StringRedisSerializer());
+	    
+	    return template;
+	}
+	
+	@Bean
+    public DefaultRedisScript<List> stockValidationScript() {
+        DefaultRedisScript<List> script = new DefaultRedisScript<>();
+        script.setLocation(new ClassPathResource("lua-scripts/validate-stock.lua"));
+        script.setResultType(List.class);
+        return script;
+    }
 	
 }

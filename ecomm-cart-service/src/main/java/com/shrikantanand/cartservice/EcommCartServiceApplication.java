@@ -15,9 +15,9 @@ public class EcommCartServiceApplication {
 	}
 	
 	@Bean
-	public RedisTemplate<String, Object> redisTemplate(
+	public RedisTemplate<String, String> redisTemplate(
 			RedisConnectionFactory connectionFactory) {
-		RedisTemplate<String, Object> template = new RedisTemplate<>();
+		RedisTemplate<String, String> template = new RedisTemplate<>();
 	    template.setConnectionFactory(connectionFactory);
 	    
 	    // Store keys and values as plain strings

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -14,22 +15,33 @@ import com.shrikantanand.cartservice.enumeration.ItemQtyUpdateType;
 import com.shrikantanand.cartservice.model.CartItem;
 import com.shrikantanand.cartservice.service.CartCacheService;
 
+import jakarta.annotation.PostConstruct;
+
 @Service
 public class CartCacheServiceImpl implements CartCacheService {
 	
 	private static final int CART_TTL_DAYS = 2;
 	
 	@Autowired
-	private RedisTemplate<String, Object> redisTemplate;
+	private RedisTemplate<String, String> redisTemplate;
+	
+	private HashOperations<String, String, String> hashOps;
+	
+	@PostConstruct
+	public void init() {
+	    this.hashOps = redisTemplate.opsForHash();
+	}
 
 	@Override
-	public CartItemMutationResponse addItemToCart(String cartId, Integer productId) {
-		boolean isItemPresent = isItemInCart(cartId, productId);
+	public CartItemMutationResponse addItemToCart(int cartId, int productId) {
+		String cartKey = getCartKey(cartId);
+		String productQuantityHashKey = getProductQuantityHashKey(productId);
+		boolean isItemPresent = isItemInCart(cartKey, productQuantityHashKey);
 		String status;
 		String message;
 		if(!isItemPresent) {
-			redisTemplate.opsForHash().put(cartId, Integer.toString(productId), "1");
-			setTTLForCart(cartId);
+			hashOps.put(cartKey, productQuantityHashKey, "1");
+			setTTLForCart(cartKey);
 			status = "SUCCESS";
 			message = "Item added to cart successfully";
 		}
@@ -43,73 +55,86 @@ public class CartCacheServiceImpl implements CartCacheService {
 		return response;
 	}
 	
-	private boolean isCartPresent(String cartId) {
-		return redisTemplate.hasKey(cartId);
+	private boolean isCartPresent(String cartKey) {
+		return redisTemplate.hasKey(cartKey);
 	}
 	
-	private boolean isItemInCart(String cartId, Integer productId) {
-		return redisTemplate.opsForHash().hasKey(cartId, Integer.toString(productId));
+	private boolean isItemInCart(String cartKey, String productQuantityHashKey) {
+		return hashOps.hasKey(cartKey, productQuantityHashKey);
 	}
 	
-	private void setTTLForCart(String cartId) {
-		redisTemplate.expireAt(cartId, Instant.now().plus(Duration.ofDays(CART_TTL_DAYS)));
+	private String getCartKey(int cartId) {
+		return "cart:" + cartId;
+	}
+	
+	private String getProductQuantityHashKey(int productId) {
+		return "product:" + productId + ":quantity";
+	}
+	
+	private void setTTLForCart(String cartKey) {
+		redisTemplate.expireAt(cartKey, Instant.now().plus(Duration.ofDays(CART_TTL_DAYS)));
 	}
 
 	@Override
-	public CartItemMutationResponse updateItemQuantity(String cartId, 
-			Integer productId, ItemQtyUpdateType updateType) {
-		boolean isCartPresent = isCartPresent(cartId);
+	public CartItemMutationResponse updateItemQuantity(int cartId, 
+			int productId, ItemQtyUpdateType updateType) {
+		String cartKey = getCartKey(cartId);
+		boolean isCartPresent = isCartPresent(cartKey);
 		if(!isCartPresent) {
 			CartItemMutationResponse response = new CartItemMutationResponse("FAILED", 
 					"Cart not present", cartId, null);
 			return response;
 		}
-		boolean isItemPresent = isItemInCart(cartId, productId);
+		String productQuantityHashKey = getProductQuantityHashKey(productId);
+		boolean isItemPresent = isItemInCart(cartKey, productQuantityHashKey);
 		if(!isItemPresent) {
 			CartItemMutationResponse response = new CartItemMutationResponse("FAILED", 
 					"Item not present in cart", cartId, null);
 			return response;
 		}
 		if(updateType == ItemQtyUpdateType.INCREMENT) {
-			Integer currentQty = Integer.parseInt((String)redisTemplate.opsForHash()
-					.get(cartId, Integer.toString(productId)));
+			Integer currentQty = Integer.parseInt(
+					hashOps.get(cartKey, productQuantityHashKey)
+			);
 			Integer newQty = currentQty + 1;
-			redisTemplate.opsForHash().put(cartId, Integer.toString(productId), 
+			hashOps.put(cartKey, productQuantityHashKey, 
 					Integer.toString(newQty));
-			setTTLForCart(cartId);
+			setTTLForCart(cartKey);
 			CartItem updatedItem = new CartItem(productId, newQty);
 			CartItemMutationResponse response = new CartItemMutationResponse("SUCCESS", 
 					"Item quantity incremented successfully", cartId, updatedItem);
 			return response;
 		}
 		else if(updateType == ItemQtyUpdateType.DECREMENT) {
-			Integer currentQty = Integer.parseInt((String)redisTemplate.opsForHash()
-					.get(cartId, Integer.toString(productId)));
+			Integer currentQty = Integer.parseInt(
+					hashOps.get(cartKey, productQuantityHashKey)
+			);
 			CartItemMutationResponse response = null;
 			if(currentQty > 1) {
 				Integer newQty = currentQty - 1;
-				redisTemplate.opsForHash().put(cartId, Integer.toString(productId), 
+				hashOps.put(cartKey, productQuantityHashKey, 
 						Integer.toString(newQty));
 				CartItem updatedItem = new CartItem(productId, newQty);
 				response = new CartItemMutationResponse("SUCCESS", 
 						"Item quantity decremented successfully", cartId, updatedItem);
 			}
 			else {
-				redisTemplate.opsForHash().delete(cartId, Integer.toString(productId));
+				hashOps.delete(cartKey, productQuantityHashKey);
 				CartItem updatedItem = new CartItem(productId, 0);
 				response = new CartItemMutationResponse("SUCCESS", 
 						"Item removed from cart as quantity reached zero", cartId, updatedItem);
 			}
-			setTTLForCart(cartId);
+			setTTLForCart(cartKey);
 			return response;
 		}
 		return null;
 	}
 
 	@Override
-	public List<CartItem> getCartItems(String cartId) {
-		Map<Object, Object> itemsMap = redisTemplate.opsForHash().entries(cartId);
-		setTTLForCart(cartId);
+	public List<CartItem> getCartItems(int cartId) {
+		String cartKey = getCartKey(cartId);
+		Map<String, String> itemsMap = hashOps.entries(cartKey);
+		setTTLForCart(cartKey);
 		if(itemsMap != null && !itemsMap.isEmpty()) {
 			List<CartItem> itemList = itemsMap.entrySet().stream()
 					.map(entry -> new CartItem(Integer.parseInt((String)entry.getKey()), 

@@ -24,19 +24,19 @@ public class CartController {
 	private CartCacheService cartCacheService;
 	
 	@PostMapping("/{cartId}/items/{productId}")
-	public CartItemMutationResponse addItemToCart(@PathVariable String cartId, 
-			@PathVariable Integer productId) {
+	public CartItemMutationResponse addItemToCart(@PathVariable int cartId, 
+			@PathVariable int productId) {
 		return cartCacheService.addItemToCart(cartId, productId);
 	}
 	
 	@PatchMapping("/{cartId}/items/{productId}")
-	public CartItemMutationResponse updateQuantity(@PathVariable String cartId, 
-			@PathVariable Integer productId, @RequestParam ItemQtyUpdateType action) {
+	public CartItemMutationResponse updateQuantity(@PathVariable int cartId, 
+			@PathVariable int productId, @RequestParam ItemQtyUpdateType action) {
 		return cartCacheService.updateItemQuantity(cartId, productId, action);
 	}
 
 	@GetMapping("/{cartId}/items")
-	public List<CartItem> getCartItems(@PathVariable String cartId) {
+	public List<CartItem> getCartItems(@PathVariable int cartId) {
 		return cartCacheService.getCartItems(cartId);
 	}
 

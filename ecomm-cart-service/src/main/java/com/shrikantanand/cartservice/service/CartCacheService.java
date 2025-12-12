@@ -8,11 +8,11 @@ import com.shrikantanand.cartservice.model.CartItem;
 
 public interface CartCacheService {
 	
-	public CartItemMutationResponse addItemToCart(String cartId, Integer productId);
+	public CartItemMutationResponse addItemToCart(int cartId, int productId);
 	
-	public CartItemMutationResponse updateItemQuantity(String cartId, 
-			Integer productId, ItemQtyUpdateType updateType);
+	public CartItemMutationResponse updateItemQuantity(int cartId, 
+			int productId, ItemQtyUpdateType updateType);
 	
-	public List<CartItem> getCartItems(String cartId);
+	public List<CartItem> getCartItems(int cartId);
 
 }
