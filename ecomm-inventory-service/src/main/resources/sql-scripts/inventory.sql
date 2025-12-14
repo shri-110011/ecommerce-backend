@@ -14,6 +14,9 @@ create table inventory (
     foreign key(product_id) references product(product_id)
 )auto_increment = 1000001;
 
+alter table inventory 
+add constraint chk_actual_stock check(actual_stock >= 0);
+
 insert into inventory (product_id, actual_stock, created_by, last_updated_by)
 values 
 (1000001, 72, 'ADMIN', 'ADMIN'),

@@ -45,16 +45,15 @@ public class Category {
 	@Column(name = "last_updated_by")
 	private String lastUpdatedBy;
 	
-	@OneToMany(mappedBy = "category", cascade = {CascadeType.REFRESH}, 
-			fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "category")
 	@JsonIgnore
 	private List<Product> products;
 	
 	public void addProduct(Product product) {
-		if(this.products == null) {
-			this.products = new ArrayList<>();
+		if(products == null) {
+			products = new ArrayList<>();
 		}
-		this.products.add(product);
+		products.add(product);
 		product.setCategory(this);
 	}
 	

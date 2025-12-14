@@ -30,6 +30,8 @@ public class RedisServiceImpl implements RedisService {
 	@Autowired
 	private DefaultRedisScript<List> stockValidationScript;
 	
+	private final long PRODUCT_STOCK_INFO_TTL_SECONDS = 60;
+	
 	Logger logger = LoggerFactory.getLogger(getClass());
 	
 	@Override
@@ -55,7 +57,13 @@ public class RedisServiceImpl implements RedisService {
 		.forEach(e -> {
 			String productQuantityKey = getProductQuantityKey(e.getProductId());
 			String actualStock = Integer.toString(e.getActualStock());
-			redisTemplate.opsForValue().set(productQuantityKey, actualStock);
+			// We need to set ttl on product stock info because the db is the 
+			// authoritative source for the actual stock info and we want the 
+			// product stock info in Redis to be eventually consistent with db.
+			// Note: This product stock info in Redis is just a quick check of  
+			// the stock availability during products page load and checkout.
+			redisTemplate.opsForValue().set(productQuantityKey, actualStock, 
+					PRODUCT_STOCK_INFO_TTL_SECONDS);
 		});	
 	}
 	
@@ -86,7 +94,8 @@ public class RedisServiceImpl implements RedisService {
             keys.add(productQuantityKey);
             args.add(String.valueOf(item.getRequestedQuantity()));
         }
-		List<String> validationResult = redisTemplate.execute(stockValidationScript, keys, args.toArray());
+		List<String> validationResult = redisTemplate.execute(stockValidationScript, 
+				keys, args.toArray());
 		return validationResult;
 	}
 
