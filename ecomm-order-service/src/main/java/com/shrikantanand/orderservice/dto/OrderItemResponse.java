@@ -1,13 +1,15 @@
-package com.shrikantanand.productservice.dto;
+package com.shrikantanand.orderservice.dto;
 
 import java.math.BigDecimal;
 
 import lombok.Value;
 
 @Value
-public class PriceValidationItem {
+public class OrderItemResponse {
 	
 	private Integer productId;
+	
+	private Integer requestedQuantity;
 	
 	private BigDecimal pricePerUnit;
 	

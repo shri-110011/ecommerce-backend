@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.shrikantanand.inventoryservice.api.response.ApiResponse;
+import com.shrikantanand.inventoryservice.api.response.ErrorDetail;
 import com.shrikantanand.inventoryservice.dto.InvalidItemResponse;
 import com.shrikantanand.inventoryservice.dto.ItemRequest;
 import com.shrikantanand.inventoryservice.dto.ItemResponse;
@@ -25,6 +27,7 @@ import com.shrikantanand.inventoryservice.entity.Reservation;
 import com.shrikantanand.inventoryservice.entity.ReservedItem;
 import com.shrikantanand.inventoryservice.enumeration.InvalidItemReason;
 import com.shrikantanand.inventoryservice.enumeration.InventoryEventType;
+import com.shrikantanand.inventoryservice.enumeration.ReservationErrorCode;
 import com.shrikantanand.inventoryservice.enumeration.ReservationStatus;
 import com.shrikantanand.inventoryservice.enumeration.UnavailableItemReason;
 import com.shrikantanand.inventoryservice.exception.StockReservationFailedException;
@@ -122,7 +125,7 @@ public class InventoryServiceImpl implements InventoryService {
 
 	@Override
 	@Transactional
-	public ReserveItemsResponse reserveItems(ReserveItemsRequest request) {
+	public ApiResponse<ReserveItemsResponse> reserveItems(ReserveItemsRequest request) {
 		// This method is for deducting the actual stock from inventory and to 
 		// enter the reserved items info in db.
 		final Integer userId = request.getUserId();
@@ -145,8 +148,9 @@ public class InventoryServiceImpl implements InventoryService {
 					item.getRequestedQuantity(), now, updatedBy);
 			// If the update query result is 0 for any order item fail-fast.
 			if(rowsAffected == 0) {
-				String message = "Some items could not be reserved because they are either not found or out-of-stock or have in-sufficient stock!";
-				throw new StockReservationFailedException(message);
+				ErrorDetail errorDetail = new ErrorDetail("productId", item.getProductId());
+				throw new StockReservationFailedException(ReservationErrorCode.INSUFFICIENT_STOCK, 
+						List.of(errorDetail));
 			}
 			else {
 				// Add inventory event corresponding to this item to be reserved.
@@ -172,12 +176,11 @@ public class InventoryServiceImpl implements InventoryService {
 		Reservation savedReservation = reservationRepository.save(reservation);
 		// Send the reservation successful response only when all update queries 
 		// result is 1.
-		int status = 200;
 		String message = "All items reserved successfully!";
 		List<ReservedItemResponse> reservedItems = getReservedItemResponse(request.getItems());
 		ReserveItemsResponse response = new ReserveItemsResponse(savedReservation.getReservationId(), 
-				status, message, reservedItems);
-		return response;
+				reservedItems);
+		return ApiResponse.success(message, response);
 	}
 	
 	private List<ReservedItemResponse> getReservedItemResponse(List<ItemRequest> items) {

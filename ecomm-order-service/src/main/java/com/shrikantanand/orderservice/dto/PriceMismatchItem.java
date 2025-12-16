@@ -1,4 +1,4 @@
-package com.shrikantanand.productservice.dto;
+package com.shrikantanand.orderservice.dto;
 
 import java.math.BigDecimal;
 
@@ -7,7 +7,7 @@ import lombok.Value;
 @Value
 public class PriceMismatchItem {
 
-private Integer productId;
+	private Integer productId;
 	
 	private BigDecimal currentPricePerUnit;
 	

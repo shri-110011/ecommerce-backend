@@ -1,5 +1,6 @@
 package com.shrikantanand.inventoryservice.service;
 
+import com.shrikantanand.inventoryservice.api.response.ApiResponse;
 import com.shrikantanand.inventoryservice.dto.ReserveItemsRequest;
 import com.shrikantanand.inventoryservice.dto.ReserveItemsResponse;
 import com.shrikantanand.inventoryservice.dto.StockValidationRequest;
@@ -11,6 +12,6 @@ public interface InventoryService {
 	
 	public StockValidationResponse validateStock(StockValidationRequest request);
 	
-	public ReserveItemsResponse reserveItems(ReserveItemsRequest equest);
+	public ApiResponse<ReserveItemsResponse> reserveItems(ReserveItemsRequest request);
 
 }

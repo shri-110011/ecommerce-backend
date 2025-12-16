@@ -22,6 +22,11 @@ spring:
                   uri: lb://ecomm-inventory-service
                   predicates:
                     - Path=/api/inventory/**
+                - id: ecomm-order-service
+                  uri: lb://ecomm-order-service
+                  predicates:
+                    - Path=/api/orders/**               
 
 server:
     port: 8082
+    

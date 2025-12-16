@@ -1,4 +1,4 @@
-package com.shrikantanand.inventoryservice.dto;
+package com.shrikantanand.orderservice.dto;
 
 import java.util.List;
 

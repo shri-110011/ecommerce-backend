@@ -30,7 +30,7 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 
 	@Query(""" 
 			select new com.shrikantanand.productservice.dto.PriceValidationItem(
-			p.productId, p.price) from Product p 
+			p.productId, p.price, p.priceVersion) from Product p 
 			where p.productId in :productIds 
 			and p.isActive = 'Y'
 			""")

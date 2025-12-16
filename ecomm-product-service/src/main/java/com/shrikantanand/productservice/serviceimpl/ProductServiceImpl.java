@@ -202,26 +202,32 @@ public class ProductServiceImpl implements ProductService {
 		List<Integer> productIds = items.stream()
 				.map(item -> item.getProductId())
 				.toList();
-		List<PriceValidationItem> fetchedProductPrices = 
+		List<PriceValidationItem> productPriceInfoList = 
 				productRepository.getProductsPrice(productIds);
-		Map<Integer, BigDecimal> currentPriceMap = fetchedProductPrices.stream()
+		Map<Integer, PriceValidationItem> productPriceInfoMap = productPriceInfoList.stream()
 				.collect(Collectors.toMap(
 						item -> item.getProductId(), 
-						item -> item.getPricePerUnit()
+						item -> item
 				));
 		List<PriceMismatchItem> priceMismatchItems = new ArrayList<>();
 		List<Integer> invalidProductIds = new ArrayList<>();
 		for(PriceValidationItem item : items) {
-			if(!currentPriceMap.containsKey(item.getProductId())) {
+			if(!productPriceInfoMap.containsKey(item.getProductId())) {
 				invalidProductIds.add(item.getProductId());
 			}
 			else {
-				BigDecimal actualPricePerUnit = currentPriceMap.get(item.getProductId());
-				if(actualPricePerUnit.compareTo(item.getPricePerUnit()) != 0) {
+				PriceValidationItem productPriceInfo = productPriceInfoMap.get(item.getProductId());
+				BigDecimal currentPricePerUnit = productPriceInfo.getPricePerUnit();
+				Integer currentPriceVersion = productPriceInfo.getPriceVersion();
+				if(currentPricePerUnit.compareTo(item.getPricePerUnit()) != 0 || 
+						currentPriceVersion.compareTo(item.getPriceVersion()) != 0) {
 					PriceMismatchItem mismatchItem = new PriceMismatchItem(
 							item.getProductId(), 
-							actualPricePerUnit, 
-							item.getPricePerUnit());
+							currentPricePerUnit, 
+							currentPriceVersion, 
+							item.getPricePerUnit(), 
+							item.getPriceVersion()
+							);
 					priceMismatchItems.add(mismatchItem);
 				}
 			}
