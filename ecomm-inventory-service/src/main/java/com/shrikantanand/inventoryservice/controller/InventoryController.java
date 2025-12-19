@@ -33,7 +33,8 @@ public class InventoryController {
 	}
 	
 	@PostMapping("/stock/reserve")
-	public ApiResponse<ReserveItemsResponse> reserveItems(@RequestBody @Valid ReserveItemsRequest request) {
+	public ApiResponse<ReserveItemsResponse> reserveItems(@RequestBody @Valid 
+			ReserveItemsRequest request) {
 		return inventoryService.reserveItems(request);
 	}
 	

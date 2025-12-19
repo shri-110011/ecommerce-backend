@@ -13,5 +13,11 @@ public interface InventoryService {
 	public StockValidationResponse validateStock(StockValidationRequest request);
 	
 	public ApiResponse<ReserveItemsResponse> reserveItems(ReserveItemsRequest request);
+	
+	public void processOrderConfirmedEvent(Integer reservationId);
+	
+	public void processOrderCancelledEvent(Integer reservationId);
+	
+	public void cleanupExpiredReservations();
 
 }

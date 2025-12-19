@@ -2,10 +2,13 @@ package com.shrikantanand.inventoryservice.serviceimpl;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -131,12 +134,12 @@ public class InventoryServiceImpl implements InventoryService {
 		final Integer userId = request.getUserId();
 		final String updatedBy = "SYSTEM";
 		final LocalDateTime now = LocalDateTime.now();
-		final long TTL_FOR_RESERVATION = 5;
+		final long TTL_FOR_RESERVATION_MINUTES = 5;
 		// Create a reservation.
 		Reservation reservation = new Reservation();
 		reservation.setUserId(userId);
 		reservation.setStatus(ReservationStatus.ACTIVE);
-		LocalDateTime expirationDateTime = now.plusMinutes(TTL_FOR_RESERVATION);
+		LocalDateTime expirationDateTime = now.plusMinutes(TTL_FOR_RESERVATION_MINUTES);
 		reservation.setExpirationDateTime(expirationDateTime);
 		reservation.setCreatedDateTime(now);
 		reservation.setCreatedBy(updatedBy);
@@ -191,6 +194,102 @@ public class InventoryServiceImpl implements InventoryService {
 			result.add(reservedItemResponse);
 		}
 		return result;
+	}
+
+	@Override
+	@Transactional
+	public void processOrderConfirmedEvent(Integer reservationId) {
+		// We need to lock the reservation row while fetching it 
+		// because we have this read, modify update sequence of operations here.
+		// If we don't lock then the scheduler doing the clean up of expired 
+		// and active reservations may pick this one.
+		Reservation reservation = reservationRepository.findByIdForUpdate(reservationId);
+		if(reservation != null && reservation.getStatus() == ReservationStatus.ACTIVE) {
+			reservation.setStatus(ReservationStatus.CONSUMED);
+			reservation.setLastUpdatedDateTime(LocalDateTime.now());
+			reservation.setLastUpdatedBy("SYSTEM");
+		}
+	}
+
+	@Override
+	@Transactional
+	public void processOrderCancelledEvent(Integer reservationId) {
+		// Here we don't need any lock on the reservation row here because 
+		// no other process apart from this consumer is going to pick the 
+		// reservation once it is in consumed state.
+		Reservation reservation = reservationRepository.findById(reservationId).orElse(null);
+		final LocalDateTime now = LocalDateTime.now();
+		final String updatedBy = "SYSTEM";
+		if(reservation != null && reservation.getStatus() == ReservationStatus.CONSUMED) {
+			List<ReservedItem> reserveItems = reservation.getReservedItems();
+			reserveItems.stream()
+			.forEach(e -> {
+				inventoryRepository.increaseStock(e.getProductId(), 
+						e.getQuantity(), now, updatedBy);
+				// Add inventory event corresponding to this item to be reserved.
+				InventoryEvent inventoryEvent = new InventoryEvent();
+				inventoryEvent.setProductId(e.getProductId());
+				inventoryEvent.setEventType(InventoryEventType.ADJUSTMENT);
+				inventoryEvent.setQuantity(e.getQuantity());
+				inventoryEvent.setCreatedDateTime(now);
+				inventoryEvent.setCreatedBy(updatedBy);
+				inventoryEvent.setReason("Freeing up stock due to order cancellation");
+				inventoryEventLogRepository.save(inventoryEvent);
+			});
+		}
+		reservation.setStatus(ReservationStatus.CANCELLED);
+		reservation.setLastUpdatedDateTime(now);
+		reservation.setLastUpdatedBy(updatedBy);
+	}
+
+	@Override
+	@Transactional
+	public void cleanupExpiredReservations() {
+		// We need to lock the reservation rows while fetching the expired and active 
+		// reservations so as to prevent lost update problems i.e. if the ORDER_CONFIRMED 
+		// consumer is holding a lock on expired and active reservation row and has still 
+		// not changed the reservation status to CONSUMED then still we would be able 
+		// to read that row here if we don't get lock before reading.
+		List<Integer> reservationIds = 
+				reservationRepository.getExpiredReservationsForUpdate(ReservationStatus.ACTIVE.name(), 
+						PageRequest.ofSize(100));
+		if(reservationIds.isEmpty()) return;
+		// For each reservation get the reserved items and group these reserved 
+		// items by product id.
+		List<Reservation> reservations = 
+				reservationRepository.getReservationsAlongWithReservedItems(reservationIds);
+		Map<Integer, Integer> productIdsToQuantityToBeFreed = new HashMap<>();
+		final LocalDateTime now = LocalDateTime.now();
+		final String updatedBy = "CRON_JOB";
+		for(Reservation reservation : reservations) {
+			reservation.getReservedItems()
+			.stream()
+			.forEach(e -> {
+				productIdsToQuantityToBeFreed.merge(e.getProductId(), e.getQuantity(), 
+						Integer::sum);
+			});
+			reservation.setStatus(ReservationStatus.CANCELLED);
+			reservation.setLastUpdatedDateTime(now);
+			reservation.setLastUpdatedBy(updatedBy);
+		}
+		// For each productId increment the stock in inventory table 
+		// and also add a record in inventory_event_log table.
+		productIdsToQuantityToBeFreed.entrySet()
+		.stream()
+		.forEach(e -> {
+			int productId = e.getKey();
+			int quantity = e.getValue();
+			inventoryRepository.increaseStock(productId, quantity, now, updatedBy);
+			// Add inventory event corresponding to this item to be freed.
+			InventoryEvent inventoryEvent = new InventoryEvent();
+			inventoryEvent.setProductId(productId);
+			inventoryEvent.setEventType(InventoryEventType.ADJUSTMENT);
+			inventoryEvent.setQuantity(quantity);
+			inventoryEvent.setCreatedDateTime(now);
+			inventoryEvent.setCreatedBy(updatedBy);
+			inventoryEvent.setReason("Freeing up expired and active reservations");
+			inventoryEventLogRepository.save(inventoryEvent);
+		});
 	}
 
 }

@@ -14,7 +14,7 @@ create table reservation (
     foreign key(user_id) references user(user_id)
 ) auto_increment = 1000001;
 
-select * from reservations;
+select * from reservation;
 
 -- truncate reservations;
 -- alter table reservations auto_increment = 1000001;

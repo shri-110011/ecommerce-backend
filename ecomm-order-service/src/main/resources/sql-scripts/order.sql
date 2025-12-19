@@ -5,6 +5,7 @@ drop table if exists `order`;
 create table `order` (
     order_id mediumint primary key auto_increment,
     user_id mediumint not null,
+    reservation_id mediumint not null,
     total_amount decimal(9, 2) not null,
     status enum('CONFIRMED', 'PROCESSING', 'PACKAGED', 'SHIPPED',
     'DELIVERED', 'CANCELLED') not null,

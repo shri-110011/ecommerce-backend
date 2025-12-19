@@ -26,13 +26,24 @@ public interface InventoryRepository extends JpaRepository<Inventory, Integer> {
 	@Modifying
 	@Query("""
 			update Inventory i 
-			set i.actualStock = i.actualStock - :requestedQuantity, 
+			set i.actualStock = i.actualStock - :deductBy, 
 			i.lastUpdatedDateTime = :lastUpdatedDateTime, 
 			lastUpdatedBy = :lastUpdatedBy 
 			where i.productId = :productId and 
-			i.actualStock >= :requestedQuantity
+			i.actualStock >= :deductBy
 			""")
-	public int deductStock(Integer productId, Integer requestedQuantity, 
+	public int deductStock(Integer productId, Integer deductBy, 
+			LocalDateTime lastUpdatedDateTime, String lastUpdatedBy);
+	
+	@Modifying
+	@Query("""
+			update Inventory i 
+			set i.actualStock = i.actualStock + :increaseBy, 
+			i.lastUpdatedDateTime = :lastUpdatedDateTime, 
+			lastUpdatedBy = :lastUpdatedBy 
+			where i.productId = :productId
+			""")
+	public int increaseStock(Integer productId, Integer increaseBy, 
 			LocalDateTime lastUpdatedDateTime, String lastUpdatedBy);
 
 }

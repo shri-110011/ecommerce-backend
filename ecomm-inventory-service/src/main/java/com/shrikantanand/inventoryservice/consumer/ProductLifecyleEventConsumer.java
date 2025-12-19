@@ -21,7 +21,8 @@ public class ProductLifecyleEventConsumer {
 	private InventoryService inventoryService;
 	
 	@KafkaListener(topics = "product.lifecycle.events",
-			containerFactory = "productLifecycleEventListenerFactory")
+			containerFactory = "productLifecycleEventListenerFactory",
+			groupId = "inventory-service.product-lifecycle")
 	public void productLifecycleEventConsumer(ConsumerRecord<Integer, ProductLifecycleEvent> record, 
 			Acknowledgment ack) {
 		ProductLifecycleEvent event = record.value();

@@ -31,6 +31,7 @@ public class ProductEventOutboxService {
 	public void processPendingProductEvents() {
 		List<ProductEventOutbox> events = 
 				productEventOutboxRepository.getAllPendingProductEvents(PageRequest.ofSize(100));
+		if(events.isEmpty()) return;
 		Map<Integer,ProductEventOutbox> latestProductEventsMap = events.stream()
 				.collect(Collectors.groupingBy(
 						ProductEventOutbox::getProductId,
@@ -42,7 +43,6 @@ public class ProductEventOutboxService {
 						)
 				));
 		Set<Integer> processedProductIds = new HashSet<>();
-		final String lastUpdateddBy = "ADMIN";
 		latestProductEventsMap.entrySet()
 		.stream()
 		.forEach(e -> {
@@ -54,6 +54,7 @@ public class ProductEventOutboxService {
 			boolean result = productEventProducer.publishProductEvent(event);
 			if(result) processedProductIds.add(e.getValue().getProductId());
 		});
+		final String lastUpdateddBy = "ADMIN";
 		for(ProductEventOutbox event : events) {
 			final LocalDateTime now = LocalDateTime.now();
 			if(processedProductIds.contains(event.getProductId())) {

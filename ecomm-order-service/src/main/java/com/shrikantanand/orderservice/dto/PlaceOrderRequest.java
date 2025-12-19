@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Value;
 
 @Value
-public class OrderRequest {
+public class PlaceOrderRequest {
 	
 	@NotNull(message = "must not be null")
 	private Integer userId;

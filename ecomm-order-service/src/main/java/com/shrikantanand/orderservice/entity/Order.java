@@ -32,6 +32,9 @@ public class Order {
 	@Column(name = "user_id")
 	private Integer userId;
 	
+	@Column(name = "reservation_id")
+	private Integer reservationId;
+	
 	@Column(name = "total_amount")
 	private BigDecimal totalAmount;
 	

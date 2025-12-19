@@ -6,26 +6,30 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.shrikantanand.orderservice.api.response.ApiResponse;
 import com.shrikantanand.orderservice.api.response.ErrorDetail;
 import com.shrikantanand.orderservice.client.InventoryClient;
 import com.shrikantanand.orderservice.client.ProductClient;
+import com.shrikantanand.orderservice.dao.OrderEventOutboxRepository;
 import com.shrikantanand.orderservice.dao.OrderRepository;
+import com.shrikantanand.orderservice.dto.CancelOrderResponse;
 import com.shrikantanand.orderservice.dto.ItemRequest;
 import com.shrikantanand.orderservice.dto.OrderItemRequest;
 import com.shrikantanand.orderservice.dto.OrderItemResponse;
-import com.shrikantanand.orderservice.dto.OrderRequest;
-import com.shrikantanand.orderservice.dto.OrderResponse;
+import com.shrikantanand.orderservice.dto.PlaceOrderRequest;
+import com.shrikantanand.orderservice.dto.PlaceOrderResponse;
 import com.shrikantanand.orderservice.dto.PriceValidationItem;
 import com.shrikantanand.orderservice.dto.PriceValidationResponse;
 import com.shrikantanand.orderservice.dto.ReserveItemsRequest;
+import com.shrikantanand.orderservice.dto.ReserveItemsResponse;
 import com.shrikantanand.orderservice.entity.Order;
+import com.shrikantanand.orderservice.entity.OrderEventOutbox;
 import com.shrikantanand.orderservice.entity.OrderItem;
 import com.shrikantanand.orderservice.entity.OrderItemKey;
 import com.shrikantanand.orderservice.enumeration.OrderErrorCode;
+import com.shrikantanand.orderservice.enumeration.OrderLifecycleEventType;
 import com.shrikantanand.orderservice.enumeration.OrderStatus;
 import com.shrikantanand.orderservice.exception.PriceValidationFailedException;
 import com.shrikantanand.orderservice.service.OrderService;
@@ -44,12 +48,12 @@ public class OrderServiceImpl implements OrderService {
 	@Autowired
 	private InventoryClient inventoryClient;
 	
-	@Value("${gateway.service.base-url}")
-	private String gatewayServiceBaseUrl;
+	@Autowired
+	private OrderEventOutboxRepository orderEventOutboxRepository;
 
 	@Override
 	@Transactional
-	public ApiResponse<OrderResponse> placeOrder(OrderRequest request) {
+	public ApiResponse<PlaceOrderResponse> placeOrder(PlaceOrderRequest request) {
 		List<PriceValidationItem> items = mapToPriceValidationItemList(request.getItems());
 		PriceValidationResponse priceValidationResponse = productClient.validateItemsPrice(items);
 		
@@ -67,11 +71,13 @@ public class OrderServiceImpl implements OrderService {
 		}
 		
 		ReserveItemsRequest reserveItemsRequest = mapToReserveItemRequest(request);
-		inventoryClient.reserveItems(reserveItemsRequest);
+		ReserveItemsResponse reserveItemsResponse = inventoryClient.reserveItems(reserveItemsRequest);
 
 		Order order = new Order();
 		order.setUserId(request.getUserId());
-		order.setTotalAmount(getTotalAmount(request));
+		order.setReservationId(reserveItemsResponse.getReservationId());
+		BigDecimal totalAmount = getTotalAmount(request);
+		order.setTotalAmount(totalAmount);
 		order.setStatus(OrderStatus.CONFIRMED);
 		LocalDateTime now = LocalDateTime.now();
 		order.setCreatedDateTime(now);
@@ -92,11 +98,23 @@ public class OrderServiceImpl implements OrderService {
 		
 		orderRepository.save(order);
 		
-		OrderResponse orderResponse = new OrderResponse(order.getOrderId(), 
-				mapToOrderItemResponseList(request.getItems()));
-		String message = "Order created successfully!";
+		OrderEventOutbox orderEventOutbox = new OrderEventOutbox();
+		orderEventOutbox.setEventType(OrderLifecycleEventType.ORDER_CONFIRMED);
+		orderEventOutbox.setOrderId(order.getOrderId());
+		orderEventOutbox.setIsProcessed('N');
+		orderEventOutbox.setRetryCount(0);
+		orderEventOutbox.setNextRetryAt(now);
+		orderEventOutbox.setCreatedDateTime(now);
+		final String createdBy = "SYSTEM";
+		orderEventOutbox.setCreatedBy(createdBy);
+		orderEventOutbox.setLastUpdatedDateTime(now);
+		orderEventOutbox.setLastUpdatedBy(createdBy);
+		orderEventOutboxRepository.save(orderEventOutbox);
 		
-		return ApiResponse.success(message, orderResponse);
+		PlaceOrderResponse response = new PlaceOrderResponse(order.getOrderId(), 
+				mapToOrderItemResponseList(request.getItems()), totalAmount);
+		final String message = "Order created successfully!";
+		return ApiResponse.success(message, response);
 	}
 	
 	private List<PriceValidationItem> mapToPriceValidationItemList(List<OrderItemRequest> items) {
@@ -107,7 +125,7 @@ public class OrderServiceImpl implements OrderService {
 				.collect(Collectors.toList());
 	}
 	
-	private ReserveItemsRequest mapToReserveItemRequest(OrderRequest request) {
+	private ReserveItemsRequest mapToReserveItemRequest(PlaceOrderRequest request) {
 		List<ItemRequest> items = request.getItems()
 				.stream()
 				.map(e -> new ItemRequest(e.getProductId(), e.getRequestedQuantity()))
@@ -115,7 +133,7 @@ public class OrderServiceImpl implements OrderService {
 		return new ReserveItemsRequest(items, request.getUserId());
 	}
 	
-	private BigDecimal getTotalAmount(OrderRequest request) {
+	private BigDecimal getTotalAmount(PlaceOrderRequest request) {
 		return request.getItems()
 		.stream()
 		.map(e -> e.getPricePerUnit()
@@ -129,6 +147,40 @@ public class OrderServiceImpl implements OrderService {
 						e.getRequestedQuantity(), e.getPricePerUnit(), 
 						e.getPriceVersion()))
 				.collect(Collectors.toList());
+	}
+
+	@Override
+	@Transactional
+	public ApiResponse<CancelOrderResponse> cancelOrder(int orderId) {
+		Order order = orderRepository.findById(orderId).orElse(null);
+		if(order == null) {
+			String message = "Order cancellation failed!";
+			String errorCode = OrderErrorCode.INVALID_ORDER_ID.name();
+			ErrorDetail errorDetail = new ErrorDetail("orderId", orderId);
+			return ApiResponse.failure(message, errorCode, List.of(errorDetail));
+		}
+		if(order.getStatus() != OrderStatus.CANCELLED) {
+			order.setStatus(OrderStatus.CANCELLED);
+			LocalDateTime now = LocalDateTime.now();
+			order.setLastUpdatedDateTime(now);
+			
+			OrderEventOutbox orderEventOutbox = new OrderEventOutbox();
+			orderEventOutbox.setEventType(OrderLifecycleEventType.ORDER_CANCELLED);
+			orderEventOutbox.setOrderId(orderId);
+			orderEventOutbox.setIsProcessed('N');
+			orderEventOutbox.setRetryCount(0);
+			orderEventOutbox.setNextRetryAt(now);
+			orderEventOutbox.setCreatedDateTime(now);
+			final String createdBy = "SYSTEM";
+			orderEventOutbox.setCreatedBy(createdBy);
+			orderEventOutbox.setLastUpdatedDateTime(now);
+			orderEventOutbox.setLastUpdatedBy(createdBy);
+			orderEventOutboxRepository.save(orderEventOutbox);
+		}
+		
+		String message = "Order cancelled successfully!";
+		CancelOrderResponse response = new CancelOrderResponse(orderId);
+		return ApiResponse.success(message, response);
 	}
 
 }

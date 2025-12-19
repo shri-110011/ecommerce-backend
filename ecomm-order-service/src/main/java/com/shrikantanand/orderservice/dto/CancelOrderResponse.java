@@ -1,14 +1,10 @@
 package com.shrikantanand.orderservice.dto;
 
-import java.util.List;
-
 import lombok.Value;
 
 @Value
-public class OrderResponse {
+public class CancelOrderResponse {
 	
 	private Integer orderId;
-	
-	private List<OrderItemResponse> orderedItems;
 
 }
