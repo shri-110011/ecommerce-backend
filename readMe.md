@@ -35,40 +35,40 @@ and can be applied when designing other microservices-based systems.
 
 ## Service Details:
 
-** Service Name: Discovery Service **
+**Service Name: Discovery Service**
 
-** Responsibility: **
+**Responsibility:**
 - Acts as a centralized registry for service locations.
 - Allows services to discover each other without hardcoding IP address or port.
 - Maintains up-to-date map of active services through periodic hearbeats sent by 
 the registered services.
 
-** Technology Used: **
+**Technology Used:**
 - Netflix Eureka Server
 
 ___
 
-** Service Name: Gateway Service **
+**Service Name: Gateway Service**
 
-** Responsibility: **
+**Responsibility:**
 - Acts as a single entry point for all client requests to the services.
 - Inspects and route requests to the correct downstream service based on route 
 configuration.
 
-** Technology Used: **
+**Technology Used:**
 - Spring Cloud Gateway
 - Netflix Eureka Client
 
 ___
 
-** Service Name: User Service **
+**Service Name: User Service**
 
-** Responsibility: **
+**Responsibility:**
 - Manages basic user profile information.
 - Maintains user status (active / inactive).
 - Provides user existence and status validation for downstream services.
 
-** Technology Used: **
+**Technology Used:**
 - Netflix Eureka Client
 - MySQL
 - Spring MVC
@@ -77,14 +77,14 @@ ___
 [User Service API Documentation](./ecomm-user-service/user-service-api-details.txt)
 ___
 
-** Service Name: Cart Service **
+**Service Name: Cart Service**
 
-** Responsibility: **
+**Responsibility:**
 - Tracks and manages the cart state for users.
 - Persists cart data in Redis to maintain state across sessions and logins.
 - Automatically cleans up expired carts.
 
-** Technology Used: **
+**Technology Used:**
 - Netflix Eureka Client
 - Spring MVC
 - Spring Data Redis
@@ -92,16 +92,16 @@ ___
 [Cart Service API Documentation](./ecomm-cart-service/cart-service-api-details.txt)
 ___
 
-** Service Name: Product Service **
+**Service Name: Product Service**
 
-** Responsibility: **
+**Responsibility:**
 - Manages the product catalog and product pricing.
 - Provides products price validation to downstream services.
 - Tracks and persists product price history.
 - Publishes product-related domain events to notify downstream services 
 asynchronously.
 
-** Technology Used: **
+**Technology Used:**
 - Netflix Eureka Client
 - MySQL
 - Spring MVC
@@ -111,9 +111,9 @@ asynchronously.
 [Product Service API Documentation](./ecomm-product-service/product-service-api-details.txt)
 ___
 
-** Service Name: Inventory Service **
+**Service Name: Inventory Service**
 
-** Responsibility: **
+**Responsibility:**
 - Manages product inventory levels and reservation lifecycle.
 - Provides near real-time product stock availability using Redis.
 - Reserves inventory items upon requests from the Order Service.
@@ -125,7 +125,7 @@ initialize inventory records.
 order cancellation) to adjust reservation status and inventory stock 
 levels.
 
-** Technology Used: **
+**Technology Used:**
 - Netflix Eureka Client
 - MySQL
 - Spring MVC
@@ -135,16 +135,16 @@ levels.
 
 ___
 
-** Service Name: Order  **
+**Service Name: Order **
 
-** Responsibility: **
+**Responsibility:**
 - Manages order creation and cancellation lifecycle.
 - Synchronously coordinates with the Inventory Service to reserve stock 
 before confirming an order.
 - Publishes order-related domain events (e.g., order created, order cancelled) 
 to notify downstream services asynchronously.
 
-** Technology Used: **
+**Technology Used:**
 - Netflix Eureka Client
 - MySQL
 - Spring MVC
