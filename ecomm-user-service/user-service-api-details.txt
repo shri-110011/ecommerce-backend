@@ -1,0 +1,42 @@
+User Service APIs:
+
+Endpoint: {baseUrl}/api/users
+Method: POST
+Payload:
+{
+    "userName": "Alex",
+    "emailId": "alex@gmail.com"
+}
+Purpose: To create a basic user profile.
+
+Response body:
+
+In case of successful user profile creation.
+{
+    "userId": 1000004,
+    "userName": "Alex",
+    "emailId": "alex@gmail.com",
+    "isActive": "Y"
+}
+
+In case of duplicate user profile.
+{
+    "statusCode": 400,
+    "message": "User with email alex@gmail.com already exists.",
+    "timestamp": 1766243890293
+}
+
+Endpoint: {baseUrl}/api/users/validate-user/{userId}
+Method: POST
+Purpose: To validate the given user id.
+
+Response body:
+
+In case the userId exists and is active.
+"ACTIVE"
+
+In case the userId exists and is in-active.
+"INACTIVE"
+
+In case the userId does not exist.
+"INVALID"

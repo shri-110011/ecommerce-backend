@@ -1,0 +1,102 @@
+Cart Service APIs:
+
+Endpoint: {baseUrl}/api/carts/{cartId}/items
+Method: GET
+Purpose: To get the cart state by cart id.
+
+Response body:
+
+In case the cartId is valid and has some items in it.
+[
+    {
+        "productId": 106,
+        "quantity": 1
+    },
+    {
+        "productId": 102,
+        "quantity": 2
+    }
+]
+
+In case the cartId is invalid.
+[]
+
+Endpoint: {baseUrl}/api/carts/{cartId}/items/{productId}
+Method: POST
+Purpose: To persist the newly added cart item in Redis.
+
+Response body:
+
+In case of successful addition of item to cart.
+{
+    "status": "SUCCESS",
+    "message": "Item added to cart successfully",
+    "cartId": 123,
+    "item": {
+        "productId": 106,
+        "quantity": 1
+    }
+}
+
+Endpoint: {baseUrl}/api/carts/{cartId}/items/{productId}?action=INCREMENT
+Method: PATCH
+Purpose: To increment the quantity of the specified product in the given cart 
+by 1 in Redis.
+
+Response body:
+
+In case of successful product quantity increment.
+{
+    "status": "SUCCESS",
+    "message": "Item quantity incremented successfully",
+    "cartId": 123,
+    "item": {
+        "productId": 102,
+        "quantity": 2
+    }
+}
+
+In case the specified cart does not exist.
+{
+    "status": "FAILED",
+    "message": "Cart not present",
+    "cartId": 124,
+    "item": null
+}
+
+In case the specified product is not in the given cart.
+{
+    "status": "FAILED",
+    "message": "Item not present in cart",
+    "cartId": 123,
+    "item": null
+}
+
+Endpoint: {baseUrl}/api/carts/123/items/103?action=DECREMENT
+Method: PATCH
+Purpose: To decrement the quantity of the specified product in the given cart 
+by 1 in Redis.
+
+Response body:
+
+When item quantity is not zero after decrement.
+{
+    "status": "SUCCESS",
+    "message": "Item quantity decremented successfully",
+    "cartId": 123,
+    "item": {
+        "productId": 102,
+        "quantity": 1
+    }
+}
+
+When item quantity is zero after decrement.
+{
+    "status": "SUCCESS",
+    "message": "Item removed from cart as quantity reached zero",
+    "cartId": 124,
+    "item": {
+        "productId": 102,
+        "quantity": 0
+    }
+}

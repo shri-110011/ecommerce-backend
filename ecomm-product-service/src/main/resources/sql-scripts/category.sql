@@ -12,6 +12,9 @@ create table category (
     last_updated_by varchar(45) not null
 ) auto_increment = 11;
 
+create unique index idx_uq_category_name
+on category ((case when is_active = 'Y' then category_name else null end));
+
 insert into category 
 (category_name, is_active, created_datetime, created_by, last_updated_datetime, last_updated_by)
 values

@@ -129,6 +129,10 @@ public class CartCacheServiceImpl implements CartCacheService {
 		}
 		return null;
 	}
+	
+	private int getProductId(String productQuantityHashKey) {
+		return Integer.parseInt(productQuantityHashKey.split(":")[1]);
+	}
 
 	@Override
 	public List<CartItem> getCartItems(int cartId) {
@@ -137,7 +141,7 @@ public class CartCacheServiceImpl implements CartCacheService {
 		setTTLForCart(cartKey);
 		if(itemsMap != null && !itemsMap.isEmpty()) {
 			List<CartItem> itemList = itemsMap.entrySet().stream()
-					.map(entry -> new CartItem(Integer.parseInt((String)entry.getKey()), 
+					.map(entry -> new CartItem(getProductId(entry.getKey()), 
 							Integer.parseInt((String)entry.getValue())))
 					.toList();
 			return itemList;

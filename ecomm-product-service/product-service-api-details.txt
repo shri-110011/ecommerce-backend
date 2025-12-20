@@ -1,0 +1,225 @@
+Product Service APIs:
+
+Endpoint: {baseUrl}/api/categories
+Method: GET
+Purpose: To get all the available product categories.
+
+Response body:
+
+[
+    {
+        "categoryId": 11,
+        "categoryName": "Electronics",
+        "isActive": "Y"
+    },
+    {
+        "categoryId": 12,
+        "categoryName": "Fashion",
+        "isActive": "Y"
+    },
+    {
+        "categoryId": 13,
+        "categoryName": "Health and Beauty",
+        "isActive": "Y"
+    },
+    {
+        "categoryId": 14,
+        "categoryName": "Home and Garden",
+        "isActive": "Y"
+    },
+    {
+        "categoryId": 15,
+        "categoryName": "Sports and Outdoors",
+        "isActive": "Y"
+    },
+    {
+        "categoryId": 16,
+        "categoryName": "Books and Media",
+        "isActive": "Y"
+    },
+    {
+        "categoryId": 17,
+        "categoryName": "Toys and Games",
+        "isActive": "Y"
+    },
+    {
+        "categoryId": 18,
+        "categoryName": "Groceries",
+        "isActive": "Y"
+    }
+]
+
+Endpoint: {baseUrl}/api/categories/{categoryId}/products
+Method: GET
+Purpose: To get all the products details falling under a given product 
+category.
+
+Response body:
+
+In case the categoryId is valid.
+{
+    "categoryId": 11,
+    "categoryName": "Electronics",
+    "products": [
+        {
+            "price": 53499.00,
+            "productId": 1000001,
+            "productName": "Laptop"
+        },
+        {
+            "price": 12999.00,
+            "productId": 1000002,
+            "productName": "Smartphone"
+        },
+        {
+            "price": 2999.00,
+            "productId": 1000003,
+            "productName": "Smartwatch"
+        },
+        {
+            "price": 2599.00,
+            "productId": 1000004,
+            "productName": "Wireless Buds"
+        }
+    ]
+}
+
+In case the categoryId is invalid.:
+{
+    "status": 404,
+    "message": "Category id: 19 not found!",
+    "timeStamp": 1766246112569
+}
+
+Endpoint: {baseUrl}/api/products/{productId}
+Method: GET
+Purpose: To get the product details corresponding to the given product id.
+
+Response body:
+
+In case the productId is valid.
+{
+    "price": 12999.00,
+    "productId": 1000002,
+    "productName": "Smartphone"
+}
+
+In case the productId is invalid.
+{
+    "status": 404,
+    "message": "Product id: 1000031 not found!",
+    "timeStamp": 1766246238359
+}
+
+Endpoint: {baseUrl}/api/categories?categoryName=Furniture
+Method: POST
+Purpose: To create a new product category.
+
+Response body:
+
+{
+    "categoryId": 19,
+    "categoryName": "Furniture",
+    "createdDateTime": "2025-12-20 21:27:53",
+    "createdBy": "ADMIN",
+    "isActive": "Y",
+    "message": "Category added successfully!"
+}
+
+Endpoint: {baseUrl}/api/products
+Method: POST
+Payload:
+{
+    "productName": "Door",
+    "productPrice": "3000",
+    "categoryId": 19,
+    "actualStock": 35
+}
+Purpose: To add a new product to the product catalog.
+
+Response body:
+
+In case of valid categoryId.
+{
+    "productId": 1000017,
+    "productName": "Door",
+    "productPrice": 3000,
+    "categoryId": 19,
+    "createdDateTime": "2025-12-20 21:37:37",
+    "createdBy": "ADMIN",
+    "isActive": "Y",
+    "message": "Product added successfully!"
+}
+
+In case of invalid categoryId.
+{
+    "status": 404,
+    "message": "Category id: 20 not found!",
+    "timeStamp": 1766246789366
+}
+
+Endpoint: {baseUrl}/api/products/{productId}/price
+Method: PATCH
+Payload:
+{
+    "newPrice": 900.00
+}
+Purpose: To update the product price corresponding to the given product id.
+
+Response body:
+
+In case of successful price updation.
+{
+    "productId": 1000005,
+    "productName": "Men's T-shirt",
+    "oldPrice": 799.00,
+    "newPrice": 900.00,
+    "updatedDateTime": "2025-12-20 21:41:26",
+    "updatedBy": "ADMIN",
+    "message": "Product price updated successfully!"
+}
+
+In case of invalid productId.
+{
+    "status": 404,
+    "message": "Product id: 1000022 not found!",
+    "timeStamp": 1766247149618
+}
+
+Endpoint: {baseUrl}/api/products/price/validation
+Method: POST
+Payload:
+[
+    {
+        "productId": 1000001,
+        "pricePerUnit": 53499.00,
+        "priceVersion": 9
+    }
+]
+Purpose: To check if the given 'pricePerUnit' and 'priceVersion' values 
+match with the current 'pricePerUnit' and 'priceVersion' values for each 
+of the given product ids.
+
+Response body:
+
+In case of successful price validation.
+{
+    "priceMismatchItems": [],
+    "invalidProductIds": []
+}
+
+In case of failed price validation.
+{
+    "priceMismatchItems": [
+        {
+            "productId": 1000001,
+            "currentPricePerUnit": 53499.00,
+            "currentPriceVersion": 1,
+            "givenPricePerUnit": 53499.00,
+            "givenPriceVersion": 9
+        }
+    ],
+    "invalidProductIds": [
+        1000021
+    ]
+}
