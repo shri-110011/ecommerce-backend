@@ -107,6 +107,7 @@ asynchronously.
 - Spring MVC
 - Spring Data JPA
 - Apache Kafka
+- Spring Data Redis
 
 [Product Service API Documentation](./ecomm-product-service/product-service-api-details.txt)
 ___
