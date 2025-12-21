@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,9 +57,15 @@ public class ProductServiceImpl implements ProductService {
 	@Autowired
 	private ProductEventOutboxRepository productEventOutboxRepository;
 	
-	private static final int PRODUCT_PRICE_TTL_SECONDS = 60;
+	private final int PRODUCT_DETAILS_TTL_HOURS;
 	
-	private static final int PRODUCT_DETAILS_TTL_HOURS = 1;
+	private final long PRODUCT_PRICE_TTL_SECONDS;
+	
+	public ProductServiceImpl(@Value("${product.details.ttl.hours}") int productDetailTTLHours, 
+			@Value("${product.price.ttl.seconds}") long productPriceTTLSeconds) {
+		this.PRODUCT_DETAILS_TTL_HOURS = productDetailTTLHours;
+		this.PRODUCT_PRICE_TTL_SECONDS = productPriceTTLSeconds;
+	}
 	
 	@Override
 	@Transactional(readOnly = true)

@@ -1,0 +1,131 @@
+Inventory Service APIs:
+
+Endpoint: {baseUrl}/api/inventory/stock/validate
+Method: POST
+Payload:
+{
+    "items": [
+        {
+            "productId": 1000001,
+            "requestedQuantity": 200
+        },
+        {
+            "productId": 1000003,
+            "requestedQuantity": 1
+        },
+        {
+            "productId": 1000089,
+            "requestedQuantity": 5
+        },
+        {
+            "productId": 1000017,
+            "requestedQuantity": 1
+        }
+    ]
+}
+Purpose: This is to check if the requested quantity of the specified products 
+is likely to be available. This check would be done based on the cache info 
+stored in Redis server.
+
+Response body:
+
+{
+    "availableItems": [
+        {
+            "productId": 1000003,
+            "requestedQuantity": 1
+        }
+    ],
+    "unavailableItems": [
+        {
+            "productId": 1000001,
+            "requestedQuantity": 200,
+            "reason": "INSUFFICIENT_STOCK"
+        },
+        {
+            "productId": 1000017,
+            "requestedQuantity": 1,
+            "reason": "OUT_OF_STOCK"
+        }
+    ],
+    "invalidItems": [
+        {
+            "productId": 1000089,
+            "requestedQuantity": 5,
+            "reason": "PRODUCT_NOT_FOUND"
+        }
+    ]
+}
+
+Endpoint: {baseUrl}/api/inventory/stock/reserve
+Method: POST
+Payload:
+{
+    "items": [
+        {
+            "productId": 1000001,
+            "requestedQuantity": 60
+        },
+        {
+            "productId": 1000003,
+            "requestedQuantity": 1
+        },
+                {
+            "productId": 1000089,
+            "requestedQuantity": 5
+        },
+        {
+            "productId": 1000017,
+            "requestedQuantity": 1
+        }
+    ],
+    "userId": 1000001
+}
+Purpose: This is to reserve the requested quantity of the specified products 
+if possible. The items would be reserved for a short duration as configured 
+by the ttl for reservation.
+
+Response body:
+
+In case if all the requested items were reserved successfully.
+
+{
+    "status": "SUCCESS",
+    "message": "All items reserved successfully!",
+    "timestamp": 1766304885533,
+    "data": {
+        "reservationId": 1000001,
+        "reservedItems": [
+            {
+                "productId": 1000001,
+                "requestedQuantity": 60,
+                "reservedQuantity": 60
+            },
+            {
+                "productId": 1000003,
+                "requestedQuantity": 1,
+                "reservedQuantity": 1
+            }
+        ]
+    },
+    "error": null
+}
+
+In case if any item in the request is invalid, out-of-stock or has in-sufficient 
+stock.
+
+{
+    "status": "FAILED",
+    "message": "One item could not be reserved because it is not found or out-of-stock or has in-sufficient stock!",
+    "timestamp": 1766304677907,
+    "data": null,
+    "error": {
+        "errorCode": "INSUFFICIENT_STOCK",
+        "details": [
+            {
+                "key": "productId",
+                "value": 1000089
+            }
+        ]
+    }
+}

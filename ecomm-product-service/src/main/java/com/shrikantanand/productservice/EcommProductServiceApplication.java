@@ -20,7 +20,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import com.shrikantanand.productservice.dto.ProductLifecycleEvent;
 
 @SpringBootApplication
-//@EnableScheduling
+@EnableScheduling
 public class EcommProductServiceApplication {
 
 	public static void main(String[] args) {

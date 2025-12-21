@@ -2,10 +2,12 @@ package com.shrikantanand.inventoryservice.serviceimpl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -30,7 +32,11 @@ public class RedisServiceImpl implements RedisService {
 	@Autowired
 	private DefaultRedisScript<List> stockValidationScript;
 	
-	private final long PRODUCT_STOCK_INFO_TTL_SECONDS = 60;
+	private final long PRODUCT_STOCK_INFO_TTL_SECONDS;
+	
+	public RedisServiceImpl(@Value("${product.stock.info.ttl.seconds}") long ttlSeconds) {
+		this.PRODUCT_STOCK_INFO_TTL_SECONDS = ttlSeconds;
+	}
 	
 	Logger logger = LoggerFactory.getLogger(getClass());
 	
@@ -63,8 +69,8 @@ public class RedisServiceImpl implements RedisService {
 			// Note: This product stock info in Redis is just a quick check of  
 			// the stock availability during products page load and checkout.
 			redisTemplate.opsForValue().set(productQuantityKey, actualStock, 
-					PRODUCT_STOCK_INFO_TTL_SECONDS);
-		});	
+					PRODUCT_STOCK_INFO_TTL_SECONDS, TimeUnit.SECONDS);
+		});
 	}
 	
 	public String getProductQuantityKey(int productId) {

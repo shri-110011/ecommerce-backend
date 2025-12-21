@@ -133,9 +133,11 @@ levels.
 - Apache Kafka
 - Spring Data Redis
 
+[Inventory Service API Documentation](./ecomm-inventory-service/inventory-service-api-details.txt)
+
 ___
 
-**Service Name: Order **
+**Service Name: Order**
 
 **Responsibility:**
 - Manages order creation and cancellation lifecycle.
@@ -150,3 +152,5 @@ to notify downstream services asynchronously.
 - Spring MVC
 - Spring Data JPA
 - Apache Kafka
+
+[Order Service API Documentation](./ecomm-order-service/order-service-api-details.txt)

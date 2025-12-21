@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,11 +35,17 @@ public class CategoryServiceImpl implements CategoryService {
 	@Autowired
 	private RedisTemplate<String, Object> redisTemplate;
 	
-	private static final int PRODUCT_CATEGORIES_TTL_DAYS = 1;
+	private final int PRODUCT_CATEGORIES_TTL_DAYS;
 	
-	private static final int CATEGORY_PRODUCTS_TTL_MINUTES = 5;
+	private final int CATEGORY_PRODUCTS_TTL_MINUTES;
 	
-	private static final String PRODUCT_CATEGORIES_KEY = "product_categories";
+	private final String PRODUCT_CATEGORIES_KEY = "product_categories";
+	
+	public CategoryServiceImpl(@Value("${product.categories.ttl.days}") int productCategoriesTTLDays, 
+			@Value("${category.products.ttl.minutes}") int categoryProductsTTLMinutes) {
+		this.PRODUCT_CATEGORIES_TTL_DAYS = productCategoriesTTLDays;
+		this.CATEGORY_PRODUCTS_TTL_MINUTES = categoryProductsTTLMinutes;
+	}
 
 	@Override
 	@Transactional(readOnly = true)

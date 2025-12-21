@@ -89,7 +89,6 @@ public class EcommInventoryServiceApplication {
 	    // Store keys and values as plain strings
 	    template.setKeySerializer(new StringRedisSerializer());
 	    template.setValueSerializer(new StringRedisSerializer());
-	    
 	    return template;
 	}
 	

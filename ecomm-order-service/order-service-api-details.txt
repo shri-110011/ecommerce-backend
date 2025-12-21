@@ -1,0 +1,132 @@
+Order Service APIs:
+
+Endpoint: {baseUrl}/api/orders/place-order
+Method: POST
+Payload:
+{
+    "items": [
+        {
+            "productId": 1000001,
+            "requestedQuantity": 2,
+            "pricePerUnit": 53499.00,
+            "priceVersion": 1
+        },
+        {
+            "productId": 1000003,
+            "requestedQuantity": 1,
+            "pricePerUnit": 2999.00,
+            "priceVersion": 1
+        }
+    ],
+    "userId": 1000001
+}
+Purpose: To place the order for the order items.
+
+Response body:
+
+In case the order is placed successfully.
+
+{
+    "status": "SUCCESS",
+    "message": "Order created successfully!",
+    "timestamp": 1766307359501,
+    "data": {
+        "orderId": 1000001,
+        "orderedItems": [
+            {
+                "productId": 1000001,
+                "requestedQuantity": 2,
+                "pricePerUnit": 53499.00,
+                "priceVersion": 1
+            },
+            {
+                "productId": 1000003,
+                "requestedQuantity": 1,
+                "pricePerUnit": 2999.00,
+                "priceVersion": 1
+            }
+        ],
+        "totalSum": 109997.00
+    },
+    "error": null
+}
+
+In case the price validation fails for any order item.
+
+{
+    "status": "FAILED",
+    "message": "Price validation failed because for one or more items price has drifted!",
+    "timestamp": 1766307602806,
+    "data": null,
+    "error": {
+        "errorCode": "PRICE_MISMATCH",
+        "details": [
+            {
+                "key": "priceMismatchItems",
+                "value": [
+                    {
+                        "productId": 1000003,
+                        "currentPricePerUnit": 2999.00,
+                        "currentPriceVersion": 1,
+                        "givenPricePerUnit": 2999.00,
+                        "givenPriceVersion": 2
+                    }
+                ]
+            }
+        ]
+    }
+}
+
+In case the stock could not be reserved for any order item.
+
+{
+    "status": "FAILED",
+    "message": "Stock reservation failed for an item because of insufficient stock!",
+    "timestamp": 1766307793803,
+    "data": null,
+    "error": {
+        "errorCode": "INSUFFICIENT_STOCK",
+        "details": [
+            {
+                "key": "productId",
+                "value": 1000001
+            }
+        ]
+    }
+}
+
+Endpoint: {baseUrl}/api/orders/cancel-order/{orderId}
+Method: POST
+Purpose: To cancel the order corresponding to the specified orderId.
+
+Response body:
+
+In case the order is cancelled successfully.
+
+{
+    "status": "SUCCESS",
+    "message": "Order cancelled successfully!",
+    "timestamp": 1766308213736,
+    "data": {
+        "orderId": 1000001
+    },
+    "error": null
+}
+
+In case the orderId is invalid.
+
+{
+    "status": "FAILED",
+    "message": "Order cancellation failed!",
+    "timestamp": 1766308094420,
+    "data": null,
+    "error": {
+        "errorCode": "INVALID_ORDER_ID",
+        "details": [
+            {
+                "key": "orderId",
+                "value": 1000005
+            }
+        ]
+    }
+}

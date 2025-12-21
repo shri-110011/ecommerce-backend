@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,6 +55,12 @@ public class InventoryServiceImpl implements InventoryService {
 	
 	@Autowired
 	private RedisService redisService;
+	
+	private final int RESERVATION_TTL_MINUTES;
+	
+	public InventoryServiceImpl(@Value("${reservation.ttl.minutes}") int ttlMinutes) {
+		this.RESERVATION_TTL_MINUTES = ttlMinutes;
+	}
 
 	@Override
 	@Transactional
@@ -134,12 +141,11 @@ public class InventoryServiceImpl implements InventoryService {
 		final Integer userId = request.getUserId();
 		final String updatedBy = "SYSTEM";
 		final LocalDateTime now = LocalDateTime.now();
-		final long TTL_FOR_RESERVATION_MINUTES = 5;
 		// Create a reservation.
 		Reservation reservation = new Reservation();
 		reservation.setUserId(userId);
 		reservation.setStatus(ReservationStatus.ACTIVE);
-		LocalDateTime expirationDateTime = now.plusMinutes(TTL_FOR_RESERVATION_MINUTES);
+		LocalDateTime expirationDateTime = now.plusMinutes(RESERVATION_TTL_MINUTES);
 		reservation.setExpirationDateTime(expirationDateTime);
 		reservation.setCreatedDateTime(now);
 		reservation.setCreatedBy(updatedBy);

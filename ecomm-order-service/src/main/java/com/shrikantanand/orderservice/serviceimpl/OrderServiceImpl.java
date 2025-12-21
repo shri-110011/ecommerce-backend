@@ -58,7 +58,7 @@ public class OrderServiceImpl implements OrderService {
 		PriceValidationResponse priceValidationResponse = productClient.validateItemsPrice(items);
 		
 		if(!priceValidationResponse.getInvalidProductIds().isEmpty()) {
-			ErrorDetail detail = new ErrorDetail("INVALID_PRODUCT_IDS", 
+			ErrorDetail detail = new ErrorDetail("invalidProductIds", 
 					priceValidationResponse.getInvalidProductIds());
 			throw new PriceValidationFailedException(OrderErrorCode.INVALID_ITEM, 
 					List.of(detail));
