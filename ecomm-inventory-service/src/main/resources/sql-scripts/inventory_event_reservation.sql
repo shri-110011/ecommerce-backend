@@ -7,7 +7,7 @@ create table inventory_event_reservation (
     reservation_id mediumint not null,
     product_id mediumint not null,
     quantity int not null,
-    created_datetime timestamp default current_timestamp not null,
+    created_datetime timestamp not null,
     created_by varchar(45) not null,
     foreign key(inventory_event_id) references inventory_event_log(event_id),
     foreign key(reservation_id) references reservation(reservation_id),

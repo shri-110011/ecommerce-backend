@@ -7,7 +7,7 @@ create table inventory_event_log (
     product_id mediumint not null,
     event_type enum('RESTOCK', 'SALE', 'ADJUSTMENT', 'RESERVATION') not null,
     quantity int not null,
-    created_datetime timestamp default current_timestamp not null,
+    created_datetime timestamp not null,
     created_by varchar(45) not null,
     reason varchar(45) default null,
     foreign key(product_id) references product(product_id)

@@ -11,7 +11,8 @@ create table `order` (
     'DELIVERED', 'CANCELLED') not null,
     created_datetime timestamp not null,
     last_updated_datetime timestamp not null,
-    foreign key (user_id) references `user`(user_id)
+    foreign key (user_id) references `user`(user_id)),
+    foreign key (reservation_id) references reservation(reservation_id)
 ) auto_increment = 1000001;
 
 alter table `order` 
