@@ -42,7 +42,7 @@ public class UserController {
 	            ex.getMessage(),
 	            System.currentTimeMillis()
 	    );
-	    return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+	    return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
 	}
 
 }
